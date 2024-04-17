@@ -10,14 +10,14 @@ const cities = [
   'Brașov', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
 ];
 
-const Dropdown = ({ items, selectedValue, onValueChange, excludedItems }) => {
+const Dropdown = ({ items, selectedValue, onValueChange, excludedItems }: any) => {
   const [open, setOpen] = useState(false);
 
   const toggleDropdown = () => {
     setOpen(!open);
   };
 
-  const filteredItems = items.filter(item => !excludedItems.includes(item));
+  const filteredItems = items.filter((item: any)  => !excludedItems.includes(item));
 
   return (
     <View style={styles.dropdownContainer}>
@@ -27,7 +27,7 @@ const Dropdown = ({ items, selectedValue, onValueChange, excludedItems }) => {
       </TouchableOpacity>
       {open && (
         <View style={styles.dropdown}>
-          {filteredItems.map(item => (
+          {filteredItems.map((item: any) => (
             <TouchableOpacity key={item} onPress={() => { onValueChange(item); setOpen(false); }}>
               <Text style={styles.dropdownItem}>{item}</Text>
             </TouchableOpacity>
@@ -38,20 +38,20 @@ const Dropdown = ({ items, selectedValue, onValueChange, excludedItems }) => {
   );
 };
 
-const FirstPage = ({ navigation }) => {
+const FirstPage = ({ navigation }: any) => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [outboundDate, setOutboundDate] = useState(new Date().toISOString().split('T')[0]); // Set default date in YYYY-MM-DD format
-  const [returnDate, setReturnDate] = useState(new Date().toISOString().split('T')[0]);
+  const [outboundDate, setOutboundDate] = useState<Date>(); // Set default date in YYYY-MM-DD format
+  const [returnDate, setReturnDate] = useState<Date>();
   const handleSwap = () => {
     const temp = from;
     setFrom(to);
     setTo(temp);
   };
   const today = new Date();
-  const startDate = getFormatedDate(today.setDate(today.getDate() + 1), 'YYYY/MM/DD');
+  const startDate = getFormatedDate(today, 'YYYY/MM/DD');
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-  const [date, setDate] = useState('');
+  const [date, setDate] = useState<string>();
   const [currentSelectingDate, setCurrentSelectingDate] = useState('outbound');
   const [numberOfPeople, setNumberOfPeople] = useState(1);
 
@@ -59,8 +59,8 @@ const FirstPage = ({ navigation }) => {
     navigation.navigate('Detalii', {
       from: from,
       to: to,
-      outboundDate: outboundDate,
-      returnDate: returnDate,
+      outboundDate: outboundDate?.toDateString(),
+      returnDate: returnDate?.toDateString(),
     });
   };
   const datePickerPosition = useRef(0);  // Start with 0 or any default suitable for your layout
@@ -70,13 +70,13 @@ const FirstPage = ({ navigation }) => {
     const newPosition = dateType === 'outbound' ? 100 : 160; // Adjust these values as per your UI layout
     datePickerPosition.current = newPosition;
     setIsDatePickerVisible(true);
-    setDate(dateType === 'outbound' ? outboundDate.toString().split('T')[0] : returnDate.toString().split('T')[0]); // Format the date
+    setDate(dateType === 'outbound' ? outboundDate?.toDateString() : returnDate?.toDateString()); // Format the date
   };
 
 
   const onDateChange = (selectedDate: string | number | Date) => {
     const newDate = new Date(selectedDate); // Create a Date object from the selected date
-    const formattedDate = newDate.toISOString().split('T')[0]; // Format to 'YYYY-MM-DD'
+    
 
     if (currentSelectingDate === 'outbound') {
       setOutboundDate(newDate);
@@ -97,7 +97,7 @@ const FirstPage = ({ navigation }) => {
         <Dropdown
             items={cities}
             selectedValue={from}
-            onValueChange={(value) => setFrom(value)}
+            onValueChange={(value:any) => setFrom(value)}
             excludedItems={[to]} // Exclude selected destination city
           />
           <TouchableOpacity onPress={handleSwap}>
@@ -106,17 +106,17 @@ const FirstPage = ({ navigation }) => {
           <Dropdown
             items={cities}
             selectedValue={to}
-            onValueChange={(value) => setTo(value)}
+            onValueChange={(value: React.SetStateAction<string>) => setTo(value)}
             excludedItems={[from]} // Exclude selected departure city
           />
         </View>
         <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('outbound')}>
           <Text style={styles.dateText}>Tur</Text>
-          <Text style={styles.dateValue}>{outboundDate.toString()}</Text>
+          <Text style={styles.dateValue}>{outboundDate?.toDateString()}</Text>
         </TouchableOpacity>
         <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('return')}>
           <Text style={styles.dateText}>Retur</Text>
-          <Text style={styles.dateValue}>{returnDate.toString()}</Text>
+          <Text style={styles.dateValue}>{returnDate?.toDateString()}</Text>
         </TouchableOpacity>
 
         {isDatePickerVisible && (

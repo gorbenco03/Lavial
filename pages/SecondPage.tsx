@@ -3,7 +3,7 @@ import { View, TextInput, Text, StyleSheet, TouchableOpacity, Switch, Image } fr
 import * as ImagePicker from 'expo-image-picker';
 import { Ionicons } from '@expo/vector-icons';
 
-const SecondPage = ({navigation, route  }) => {
+const SecondPage = ({navigation, route  } : any) => {
   const { from, to, outboundDate, returnDate } = route.params;
   const [name, setName] = useState('');
   const [surname, setSurname] = useState('');
@@ -22,9 +22,9 @@ const SecondPage = ({navigation, route  }) => {
       quality: 1,
     });
 
-    if (!result.canceled) {
-      setStudentIdImage(result.uri);
-    }
+    // if (!result.canceled) {
+    //   setStudentIdImage(result.uri=);
+    // }
   };
 
   
@@ -32,8 +32,8 @@ const SecondPage = ({navigation, route  }) => {
     navigation.navigate('Checkout', {
       from: from,
       to: to,
-      // outboundDate: outboundDate,
-      // returnDate: returnDate,
+      outboundDate: outboundDate,
+      returnDate: returnDate,
       name: name,
       surname: surname,
       email: email,

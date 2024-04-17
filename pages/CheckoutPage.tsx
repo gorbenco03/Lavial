@@ -3,15 +3,15 @@ import { View, Text, Modal, StyleSheet, TouchableOpacity, Alert } from 'react-na
 import { MaterialCommunityIcons, FontAwesome, Ionicons } from '@expo/vector-icons';
 import CardDetailsComponent from '../CardDetailsComponent';
 
-const CheckoutPage = ({navigation,  route }) => {
+const CheckoutPage = ({navigation,  route } : any) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const { from, to,  name, surname, email, phone, passportSerial, isStudent, studentIdSerial, studentIdImage } = route.params;
+  const { from, to, outboundDate, returnDate,   name, surname, email, phone, passportSerial, isStudent, studentIdSerial, studentIdImage } = route.params;
 
   const handlePaymentPress = () => {
     setModalVisible(true);
   };
-  const navigateToFinalPage = (paymentDetails) => {
+  const navigateToFinalPage = (paymentDetails : any) => {
     // Prepare the details to be passed to the FinalPage
     const travelDetails = {
       from,
@@ -21,6 +21,8 @@ const CheckoutPage = ({navigation,  route }) => {
       email,
       phone,
       passportSerial,
+      outboundDate, 
+      returnDate, 
       isStudent,
       studentIdSerial,
       ...paymentDetails // Include payment details like card number, etc.
@@ -81,7 +83,7 @@ const CheckoutPage = ({navigation,  route }) => {
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Detalii pentru plată</Text>
             <CardDetailsComponent
-              onConfirmPayment={(cardNumber, expiryDate, cvc, cardHolderName) => {
+              onConfirmPayment={({cardNumber, expiryDate, cvc, cardHolderName} : any) => {
                 // Logic for confirming payment with your payment processor (e.g., Stripe)
                 console.log('Detaliile cardului:', cardNumber, expiryDate, cvc, cardHolderName);
                 // After payment is confirmed, navigate to the Final Page:
