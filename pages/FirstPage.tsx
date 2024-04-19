@@ -1,16 +1,15 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView } from 'react-native';
+import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import DatePicker from 'react-native-modern-datepicker';
 import { getToday, getFormatedDate } from "react-native-modern-datepicker";
-import { Picker } from '@react-native-picker/picker';
 
 const cities = [
-  'Chisinau', 'Huși', 'Tecuci', 'Adjud', 'Onești',
-  'Brașov', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
+  'Chișinău', 'Huși', 'Tecuci', 'Adjud', 'Onești',
+  'Brașov', 'Alba Iulia',  'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
 ];
 
-const Dropdown = ({ items, selectedValue, onValueChange, excludedItems }: any) => {
+const Dropdown = ({ items, selectedValue, onValueChange, excludedItems, placeholder}: any) => {
   const [open, setOpen] = useState(false);
 
   const toggleDropdown = () => {
@@ -18,11 +17,10 @@ const Dropdown = ({ items, selectedValue, onValueChange, excludedItems }: any) =
   };
 
   const filteredItems = items.filter((item: any)  => !excludedItems.includes(item));
-
   return (
     <View style={styles.dropdownContainer}>
       <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownTrigger}>
-        <Text>{selectedValue}</Text>
+        <Text>{selectedValue || placeholder}</Text>
         <MaterialIcons name={open ? "arrow-drop-up" : "arrow-drop-down"} size={24} style={styles.dropdownIcon} />
       </TouchableOpacity>
       {open && (
@@ -41,50 +39,81 @@ const Dropdown = ({ items, selectedValue, onValueChange, excludedItems }: any) =
 const FirstPage = ({ navigation }: any) => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
-  const [outboundDate, setOutboundDate] = useState<Date>(); // Set default date in YYYY-MM-DD format
-  const [returnDate, setReturnDate] = useState<Date>();
+  const [outboundDate, setOutboundDate] = useState<Date | undefined>(undefined);
+  const [returnDate, setReturnDate] = useState<Date | undefined>(undefined);
+  const [minDateForReturn, setMinDateForReturn] = useState<string | undefined>(undefined);
+  
+  const today = getToday();
   const handleSwap = () => {
     const temp = from;
     setFrom(to);
     setTo(temp);
-  };
-  const today = new Date();
-  const startDate = getFormatedDate(today, 'YYYY/MM/DD');
+  };  
+ 
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [date, setDate] = useState<string>();
-  const [currentSelectingDate, setCurrentSelectingDate] = useState('outbound');
+  const [currentSelectingDate, setCurrentSelectingDate] = useState<'outbound' | 'return'>('outbound');
   const [numberOfPeople, setNumberOfPeople] = useState(1);
+  const isValid = () => from !== '' && to !== '' && outboundDate;
+   // Tracks the minimum date for the return trip
+
 
   const goToPersonalDetails = () => {
-    navigation.navigate('Detalii', {
-      from: from,
-      to: to,
-      outboundDate: outboundDate?.toDateString(),
-      returnDate: returnDate?.toDateString(),
-    });
+    // Verificăm dacă informațiile sunt completate înainte de a naviga
+    if (isValid()) {
+      navigation.navigate('Detalii', {
+        from: from,
+        to: to,
+        outboundDate: outboundDate?.toDateString(),
+        returnDate: returnDate?.toDateString(),
+        numberOfPeople: numberOfPeople, 
+      });
+    } else {
+      // Altfel, afișăm o alertă sau mesaj pentru a completa informațiile necesare
+      Alert.alert("Ai grija", "Te rog completează toate câmpurile pentru a continua.");
+    }
   };
+
   const datePickerPosition = useRef(0);  // Start with 0 or any default suitable for your layout
 
-  const handleDatePress = (dateType: string) => {
+  const handleDatePress = (dateType: 'outbound' | 'return') => {
+    if (dateType === 'return' && !outboundDate) {
+      Alert.alert("Atenție", "Selectați mai întâi data de plecare.");
+      return; // Exit if there's no outbound date yet
+    }
+
     setCurrentSelectingDate(dateType);
-    const newPosition = dateType === 'outbound' ? 100 : 160; // Adjust these values as per your UI layout
-    datePickerPosition.current = newPosition;
     setIsDatePickerVisible(true);
-    setDate(dateType === 'outbound' ? outboundDate?.toDateString() : returnDate?.toDateString()); // Format the date
+
+    if (dateType === 'outbound') {
+      setDate(outboundDate ? outboundDate.toISOString().split('T')[0] : getToday());
+    } else {
+      setDate(returnDate ? returnDate.toISOString().split('T')[0] : minDateForReturn);
+    }
   };
 
+  
+  
 
-  const onDateChange = (selectedDate: string | number | Date) => {
-    const newDate = new Date(selectedDate); // Create a Date object from the selected date
-    
+  const onDateChange = (selectedDate: string) => {
+    const newDate = new Date(selectedDate.replace(/\//g, '-'));
 
     if (currentSelectingDate === 'outbound') {
       setOutboundDate(newDate);
+      const nextDay = new Date(newDate);
+      nextDay.setDate(newDate.getDate() + 1); // Increment day by one for return date minimum
+      setMinDateForReturn(nextDay.toISOString().split('T')[0]);
+      if (returnDate && returnDate < nextDay) {
+        setReturnDate(undefined); // Reset if return date is before new minimum
+      }
     } else {
       setReturnDate(newDate);
     }
     setIsDatePickerVisible(false);
   };
+
+  
+  
 
 
 
@@ -97,6 +126,7 @@ const FirstPage = ({ navigation }: any) => {
         <Dropdown
             items={cities}
             selectedValue={from}
+            placeholder = "Pornire de la "
             onValueChange={(value:any) => setFrom(value)}
             excludedItems={[to]} // Exclude selected destination city
           />
@@ -106,30 +136,37 @@ const FirstPage = ({ navigation }: any) => {
           <Dropdown
             items={cities}
             selectedValue={to}
+            placeholder = "Destinatie la "
             onValueChange={(value: React.SetStateAction<string>) => setTo(value)}
             excludedItems={[from]} // Exclude selected departure city
           />
         </View>
         <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('outbound')}>
-          <Text style={styles.dateText}>Tur</Text>
-          <Text style={styles.dateValue}>{outboundDate?.toDateString()}</Text>
-        </TouchableOpacity>
-        <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('return')}>
-          <Text style={styles.dateText}>Retur</Text>
-          <Text style={styles.dateValue}>{returnDate?.toDateString()}</Text>
-        </TouchableOpacity>
+        <Text style={styles.dateText}>Tur</Text>
+        <Text style={styles.dateValue}>{outboundDate ? outboundDate.toDateString() : 'Selectează data'}</Text>
+      </TouchableOpacity>
+      <TouchableOpacity 
+  style={[styles.dateRow, {backgroundColor: outboundDate ? '#A6E3E9' : '#e0e0e0'}]} 
+  onPress={() => handleDatePress('return')}
+  disabled={!outboundDate}
+>
+
+        <Text style={styles.dateText}>Retur</Text>
+        <Text style={styles.dateValue}>{returnDate ? returnDate.toDateString() : 'Selectează data'}</Text>
+      </TouchableOpacity>
 
         {isDatePickerVisible && (
           <View style={[styles.datePickerContainer, { top: datePickerPosition.current }]}>
 
-            <DatePicker
-              mode='calendar'
-              selected={date}
-              minimumDate={startDate}
-              onDateChange={onDateChange}
-            />
+          <DatePicker
+          mode='calendar'
+          selected={date}
+          style={styles.CalendarStyle}
+          minimumDate={currentSelectingDate === 'return' ? minDateForReturn : getToday()}
+          onDateChange={onDateChange}
+        />
             <TouchableOpacity onPress={() => setIsDatePickerVisible(false)} style={styles.closeButton}>
-              <Text>Close</Text>
+              <Text style={styles.searchButtonText}>Close</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -155,21 +192,53 @@ const FirstPage = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#E3FDFD', // fundal alb
+    paddingVertical: 20, // adaugă padding vertical
   },
   form: {
-    margin: 20,
+    backgroundColor: '#CBF1F5', // fundal pentru formular
+    borderRadius: 12,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000', // umbra
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
+  closeTextButton: {
+    fontSize: 16, 
+   
+
+  }, 
+
   datePickerContainer: {
-    position: 'absolute',
-    width: '100%',
-    backgroundColor: 'white',
-    zIndex: 1 // Ensure it appears above other content
+    position: 'relative',
+    backgroundColor: '#A6E3E9',
+    borderRadius: 22, 
+    marginVertical: 10,
+
   },
   closeButton: {
-    padding: 10,
+    backgroundColor: '#393E46', // Schimbare la culoarea fundalului
+    borderRadius: 10,
+    padding: 5,
+    marginHorizontal: 100,
+    marginBottom: 10,  
     alignItems: 'center',
-    marginTop: 10
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
+    
   },
   formLabel: {
     fontSize: 24,
@@ -179,8 +248,15 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    color: "white", 
     marginBottom: 20,
   },
+  CalendarStyle : {
+    backgroundColor: '#A6E3E9',  
+    borderRadius: 22, 
+  
+  }, 
+
   textInput: {
     flex: 1,
     borderWidth: 1,
@@ -191,6 +267,7 @@ const styles = StyleSheet.create({
   },
   swapIcon: {
     paddingHorizontal: 10,
+    color: "black", 
   },
   datePickerRow: {
     marginBottom: 20,
@@ -201,73 +278,94 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     marginVertical: 8,
-    borderWidth: 1,
+    borderWidth: 0,
+    marginTop: 5,
     borderColor: '#ddd',
-    borderRadius: 5,
+    borderRadius: 10,
+    backgroundColor: '#A6E3E9', // Background pentru data de tur
   },
+  
   dateText: {
     fontSize: 16,
+    color: "black", 
   },
   dateValue: {
     fontSize: 16,
-    color: 'grey',
+    color: 'black',
   },
   passengerPickerRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
+    marginTop : 20, 
+
   },
   personIcon: {
     marginRight: 10,
+    color: "black"
   },
   passengerText: {
     flex: 1,
     fontSize: 16,
+    color: "#000"
   },
   iconButton: {
     padding: 10,
+    color: "black"
   },
   searchButton: {
-    backgroundColor: '#268df5',
-    paddingVertical: 15,
-    borderRadius: 5,
+    backgroundColor: '#393E46', // Schimbare la culoarea fundalului
+    borderRadius: 10,
+    padding: 20,
+    marginHorizontal: 0,
+    marginBottom: 70,
     alignItems: 'center',
-    marginTop: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
 
   },
 
   dropdownContainer: {
     flex: 1,
-  },
+    borderRadius: 10, 
+    backgroundColor: "#A6E3E9", 
+    color: "white", 
+    },
   dropdownTrigger: {
     flexDirection: 'row',
     alignItems: 'center',
-    borderWidth: 1,
     borderColor: '#ddd',
-    borderRadius: 5,
+    borderRadius: 10,
     padding: 10,
-    backgroundColor: '#fff',
+    backgroundColor: '#A6E3E9',
   },
   dropdownIcon: {
     marginLeft: 'auto',
   },
   dropdown: {
     marginTop: 5,
-    borderWidth: 1,
+    borderWidth: 0,
     borderColor: '#ddd',
-    borderRadius: 5,
-    backgroundColor: '#fff',
+    borderRadius: 10,
+    backgroundColor: '#53a8b6',
   },
   dropdownItem: {
-
-    padding: 10,},
+    color: "white", 
+    padding: 10,}
+    ,
 
 
   headerText: {
     textAlign: 'center', // Alinează textul în centru pe orizontală
     fontSize: 24, // sau orice dimensiune preferi
     fontWeight: 'bold',
-    marginVertical: 20, // adaugă un spațiu vertical sus și jos pentru estetică
+    marginBottom: 10, // adaugă un spațiu vertical sus și jos pentru estetică
     // Dacă ai nevoie să centrezi textul și pe verticală într-un View cu 'flex: 1'
     // și nu există alte elemente pe acel ax, ai putea adăuga:
     // justifyContent: 'center' pe stilul 'container'

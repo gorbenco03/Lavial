@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 // import QRCode from 'react-native-qrcode-svg';
 
-const FinalPage = ({ route }) => {
+const FinalPage = ({ route } : any) => {
   // Extrageți detaliile de călătorie din parametrii rutei
   const { travelDetails } = route.params;
 

@@ -1,73 +1,140 @@
 import React, { useState } from 'react';
-import { View, Text, Modal, StyleSheet, TouchableOpacity, Alert } from 'react-native';
-import { MaterialCommunityIcons, FontAwesome, Ionicons } from '@expo/vector-icons';
+import { View, Text, Modal, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
+import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import CardDetailsComponent from '../CardDetailsComponent';
 
-const CheckoutPage = ({navigation,  route } : any) => {
+const CheckoutPage = ({ navigation, route }: any) => {
   const [modalVisible, setModalVisible] = useState(false);
 
-  const { from, to, outboundDate, returnDate,   name, surname, email, phone, passportSerial, isStudent, studentIdSerial, studentIdImage } = route.params;
+  const { from, to, outboundDate, returnDate, passengers } = route.params;
+
+  const studentDiscounts: any  = {
+    "Chișinău-Timișoara": 50,
+    "Timișoara-Chișinău": 50,
+    "Chișinău-Deva": 45,
+    "Deva-Chișinău": 45,
+    "Chișinău-Sibiu": 35,
+    "Sibiu-Chișinău": 35,
+    "Chișinău-Alba Iulia": 40,
+    "Alba Iulia-Chișinău": 40,
+    "Chișinău-Brașov": 25,
+    "Brașov-Chișinău": 25,
+    // Ensure to add reverse routes as well
+};
+
+
+const destinationPrices: any  = {
+    "Chișinău-Timișoara": 200,
+    "Chișinău-Deva": 175,
+    "Chișinău-Sibiu": 140,
+    "Chișinău-Alba Iulia": 150,
+    "Chișinău-Brașov": 125, 
+    "Chișinău-Onești": 90, 
+    "Chișinău-Adjud": 75, 
+    "Chișinău-Tecuci": 75, 
+    "Chișinău-Bârlad": 50, 
+    "Chișinău-Huși": 50, 
+    // Add other destinations and prices here
+  };
+
+  // Ensure reverse direction has the same prices
+  Object.keys(destinationPrices).forEach(key => {
+    const [start, end] = key.split('-');
+    const reverseKey = `${end}-${start}`;
+    if (!destinationPrices[reverseKey]) {
+      destinationPrices[reverseKey] = destinationPrices[key];
+    }
+  });
+
+  
+
+  const calculateTotalPrice = () => {
+    return passengers.reduce((total: any, passenger: { isStudent: any; }) : any => {
+      const basePrice = destinationPrices[`${from}-${to}`] || 0;
+      let totalPrice = basePrice;
+
+      if (returnDate) {
+        totalPrice += destinationPrices[`${to}-${from}`] || 0;
+      }
+
+      if (passenger.isStudent) {
+        totalPrice -= studentDiscounts[`${from}-${to}`] || 0;
+        if (returnDate) {
+          totalPrice -= studentDiscounts[`${to}-${from}`] || 0;
+        }
+      }
+
+      return total + totalPrice;
+    }, 0);
+  };
 
   const handlePaymentPress = () => {
     setModalVisible(true);
   };
-  const navigateToFinalPage = (paymentDetails : any) => {
-    // Prepare the details to be passed to the FinalPage
-    const travelDetails = {
+
+  const navigateToFinalPage = (paymentDetails: any) => {
+    navigation.navigate('Final', {
       from,
       to,
-      name,
-      surname,
-      email,
-      phone,
-      passportSerial,
-      outboundDate, 
-      returnDate, 
-      isStudent,
-      studentIdSerial,
-      ...paymentDetails // Include payment details like card number, etc.
-    };
-    // Navigate to the Final Page after payment confirmation
-    navigation.navigate('Final', { travelDetails });
+      outboundDate,
+      returnDate,
+      passengers,
+      ...paymentDetails,
+    });
   };
-
-
   return (
-    <View style={styles.container}>
-      <Text style={styles.headerText}>Detalii despre calatorie</Text>
+    <ScrollView style={styles.container}>
+      <Text style={styles.headerText}>Detalii despre călătorie</Text>
 
       <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Detalii cursa</Text>
+        <Text style={styles.sectionTitle}>Detalii cursă</Text>
         <View style={styles.detailsRow}>
-          {/* <Text style={styles.detailsTime}>{outboundDate}</Text>
-          <MaterialCommunityIcons name="arrow-right-bold" size={20} />
-          <Text style={styles.detailsTime}>{returnDate}</Text> */}
+          <FontAwesome name="calendar" size={18} color="#333" />
+          <Text style={styles.detailsTime}>{outboundDate}</Text>
+          <FontAwesome name="long-arrow-right" size={16} color="#333" />
+          <Text style={styles.detailsTime}>{returnDate}</Text>
+          <FontAwesome name="calendar" size={18} color="#333" />
         </View>
-        <Text style={styles.detailsRoute}>{from} → {to}</Text>
+        <Text style={styles.detailsRoute}>
+        <FontAwesome name="location-arrow" size={16} color="#333" /> {from} <FontAwesome name="long-arrow-right" size={16} color="#333" /> {to}
+        </Text>
       </View>
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Informații personale</Text>
-        <Text style={styles.detailsName}>{name} {surname}</Text>
-        <View style={styles.detailsRow}>
-          <FontAwesome name="user-o" size={20} />
-          <Text style={styles.detailsSeat}>Numărul de telefon: {phone}</Text>
+      {passengers.map((passenger: { name: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; surname: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; phone: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; email: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; passportSerial: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; isStudent: any; studentIdSerial: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; }, index: React.Key | null | undefined) => (
+        <View key={index} style={styles.section}>
+          <Text style={styles.sectionTitle}>Informații personale despre pasagerul {(index as number ) + 1}</Text>
+          <Text style={styles.detailsName}>
+            <FontAwesome name="user-circle-o" size={20} color="#333" /> {passenger.name} {passenger.surname}
+          </Text>
+          <View style={styles.detailsRow}>
+            <FontAwesome name="phone" size={20} color="#333" />
+            <Text style={styles.detailsSeat}>{passenger.phone}</Text>
+          </View>
+          <View style={styles.detailsRow}>
+            <FontAwesome name="envelope-o" size={20} color="#333" />
+            <Text style={styles.detailsExtras}>{passenger.email}</Text>
+          </View>
+          <View style={styles.detailsRow}>
+            <FontAwesome name="id-card-o" size={18} color="#333" />
+            <Text style={styles.detailsExtras}>{passenger.passportSerial}</Text>
+          </View>
+          {passenger.isStudent && (
+            <View style={styles.detailsRow}>
+              <FontAwesome name="graduation-cap" size={18} color="#333" />
+              <Text style={styles.detailsExtras}>{passenger.studentIdSerial}</Text>
+            </View>
+          )}
         </View>
-        <Text style={styles.detailsExtras}>Email: {email}</Text>
-        <Text style={styles.detailsExtras}>Seria pasaportului: {passportSerial}</Text>
-        {isStudent && (
-          <Text style={styles.detailsExtras}>Seria legitimatiei de student: {studentIdSerial}</Text>
-        )}
-      </View>
+      ))}
 
       <View style={styles.totalSection}>
         <Text style={styles.totalTitle}>Total de plată</Text>
-        <Text style={styles.totalPrice}>€15</Text>
+        <Text style={styles.totalPrice}>RON {calculateTotalPrice()}</Text>
       </View>
 
       <TouchableOpacity style={styles.payButton} onPress={handlePaymentPress}>
         <Text style={styles.payButtonText}>Plată cu cardul</Text>
-        <MaterialCommunityIcons name="credit-card-outline" size={24} />
+        <MaterialCommunityIcons name="credit-card-outline" size={24} color="white" />
       </TouchableOpacity>
 
       <Modal
@@ -83,87 +150,109 @@ const CheckoutPage = ({navigation,  route } : any) => {
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Detalii pentru plată</Text>
             <CardDetailsComponent
-              onConfirmPayment={({cardNumber, expiryDate, cvc, cardHolderName} : any) => {
-                // Logic for confirming payment with your payment processor (e.g., Stripe)
+              onConfirmPayment={({ cardNumber, expiryDate, cvc, cardHolderName } : any) => {
                 console.log('Detaliile cardului:', cardNumber, expiryDate, cvc, cardHolderName);
-                // After payment is confirmed, navigate to the Final Page:
                 navigateToFinalPage({ cardNumber, expiryDate, cvc, cardHolderName });
               }}
             />
-            <TouchableOpacity
-              style={styles.buttonClose}
-              onPress={() => setModalVisible(!modalVisible)}
-            >
+            <TouchableOpacity style={styles.buttonClose} onPress={() => setModalVisible(!modalVisible)}>
               <Text style={styles.textStyle}>Închide</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
-    </View>
+    </ScrollView>
   );
 };
+
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#fff',
-  },
-  section: {
-    backgroundColor: '#f7f7f7',
-    borderRadius: 10,
-    padding: 20,
-    marginHorizontal: 20,
-    marginBottom: 10,
-  },
-  totalSection: {
-    backgroundColor: '#f7f7f7',
-    borderRadius: 10,
-    padding: 20,
-    marginHorizontal: 20,
-    marginBottom: 20,
-    alignItems: 'center',
+    backgroundColor: '#E3FDFD',
   },
   headerText: {
     textAlign: 'center',
     fontSize: 24,
     fontWeight: 'bold',
+    marginTop: 20,
+    marginBottom: 20,
+    color: '#333',
+  },
+  section: {
+    backgroundColor: '#CBF1F5',
+    borderRadius: 12,
     padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   sectionTitle: {
-    fontSize: 18,
+    fontSize: 20,
     fontWeight: 'bold',
-    marginBottom: 5,
+    color: '#333',
+    marginBottom: 10,
   },
   detailsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 5,
+    marginBottom: 10,
   },
   detailsTime: {
     fontSize: 16,
-    marginHorizontal: 5,
+    color: '#555',
+    margin: 8,
   },
   detailsRoute: {
-    fontSize: 16,
+    fontSize: 18,
     color: '#333',
-    marginBottom: 5,
+    fontWeight: '500',
+    margin: 8,
   },
   detailsName: {
-    fontSize: 16,
+    fontSize: 18,
     fontWeight: 'bold',
-    marginBottom: 5,
+    color: '#333',
+    marginBottom: 10,
   },
   detailsSeat: {
-    fontSize: 14,
-    marginLeft: 5,
+    fontSize: 16,
+    margin: 8,
+    color: '#555',
   },
   detailsExtras: {
-    fontSize: 14,
+    fontSize: 16,
     color: '#666',
+    margin: 8,
+  },
+  totalSection: {
+    backgroundColor: '#CBF1F5',
+    borderRadius: 10,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    alignItems: 'center',
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   totalTitle: {
     fontSize: 18,
     fontWeight: 'bold',
+    color: '#333',
+    marginBottom: 10,
   },
   totalPrice: {
     fontSize: 22,
@@ -175,15 +264,24 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#f7f7f7',
+    backgroundColor: '#393E46',
     borderRadius: 10,
     padding: 20,
     marginHorizontal: 20,
     marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   payButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
+    color: '#fff',
   },
   centeredView: {
     flex: 1,
@@ -224,5 +322,6 @@ const styles = StyleSheet.create({
     fontSize: 18,
   },
 });
+
 
 export default CheckoutPage;
