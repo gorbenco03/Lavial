@@ -6,17 +6,17 @@ import { getToday, getFormatedDate } from "react-native-modern-datepicker";
 
 const cities = [
   'Chișinău', 'Huși', 'Tecuci', 'Adjud', 'Onești',
-  'Brașov', 'Alba Iulia',  'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
+  'Brașov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
 ];
 
-const Dropdown = ({ items, selectedValue, onValueChange, excludedItems, placeholder}: any) => {
+const Dropdown = ({ items, selectedValue, onValueChange, excludedItems, placeholder }: any) => {
   const [open, setOpen] = useState(false);
 
   const toggleDropdown = () => {
     setOpen(!open);
   };
 
-  const filteredItems = items.filter((item: any)  => !excludedItems.includes(item));
+  const filteredItems = items.filter((item: any) => !excludedItems.includes(item));
   return (
     <View style={styles.dropdownContainer}>
       <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownTrigger}>
@@ -42,20 +42,20 @@ const FirstPage = ({ navigation }: any) => {
   const [outboundDate, setOutboundDate] = useState<Date | undefined>(undefined);
   const [returnDate, setReturnDate] = useState<Date | undefined>(undefined);
   const [minDateForReturn, setMinDateForReturn] = useState<string | undefined>(undefined);
-  
+
   const today = getToday();
   const handleSwap = () => {
     const temp = from;
     setFrom(to);
     setTo(temp);
-  };  
- 
+  };
+
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [date, setDate] = useState<string>();
   const [currentSelectingDate, setCurrentSelectingDate] = useState<'outbound' | 'return'>('outbound');
   const [numberOfPeople, setNumberOfPeople] = useState(1);
   const isValid = () => from !== '' && to !== '' && outboundDate;
-   // Tracks the minimum date for the return trip
+  // Tracks the minimum date for the return trip
 
 
   const goToPersonalDetails = () => {
@@ -66,7 +66,7 @@ const FirstPage = ({ navigation }: any) => {
         to: to,
         outboundDate: outboundDate?.toDateString(),
         returnDate: returnDate?.toDateString(),
-        numberOfPeople: numberOfPeople, 
+        numberOfPeople: numberOfPeople,
       });
     } else {
       // Altfel, afișăm o alertă sau mesaj pentru a completa informațiile necesare
@@ -92,8 +92,8 @@ const FirstPage = ({ navigation }: any) => {
     }
   };
 
-  
-  
+
+
 
   const onDateChange = (selectedDate: string) => {
     const newDate = new Date(selectedDate.replace(/\//g, '-'));
@@ -112,8 +112,8 @@ const FirstPage = ({ navigation }: any) => {
     setIsDatePickerVisible(false);
   };
 
-  
-  
+
+
 
 
 
@@ -123,11 +123,11 @@ const FirstPage = ({ navigation }: any) => {
       <View style={styles.form}>
         <Text style={styles.headerText}>Rezerva-ti cursa impreuna cu noi!</Text>
         <View style={styles.inputRow}>
-        <Dropdown
+          <Dropdown
             items={cities}
             selectedValue={from}
-            placeholder = "Pornire de la "
-            onValueChange={(value:any) => setFrom(value)}
+            placeholder="Pornire de la "
+            onValueChange={(value: any) => setFrom(value)}
             excludedItems={[to]} // Exclude selected destination city
           />
           <TouchableOpacity onPress={handleSwap}>
@@ -136,35 +136,35 @@ const FirstPage = ({ navigation }: any) => {
           <Dropdown
             items={cities}
             selectedValue={to}
-            placeholder = "Destinatie la "
+            placeholder="Destinatie la "
             onValueChange={(value: React.SetStateAction<string>) => setTo(value)}
             excludedItems={[from]} // Exclude selected departure city
           />
         </View>
         <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('outbound')}>
-        <Text style={styles.dateText}>Tur</Text>
-        <Text style={styles.dateValue}>{outboundDate ? outboundDate.toDateString() : 'Selectează data'}</Text>
-      </TouchableOpacity>
-      <TouchableOpacity 
-  style={[styles.dateRow, {backgroundColor: outboundDate ? '#A6E3E9' : '#e0e0e0'}]} 
-  onPress={() => handleDatePress('return')}
-  disabled={!outboundDate}
->
+          <Text style={styles.dateText}>Tur</Text>
+          <Text style={styles.dateValue}>{outboundDate ? outboundDate.toDateString() : 'Selectează data'}</Text>
+        </TouchableOpacity>
+        <TouchableOpacity
+          style={[styles.dateRow, { backgroundColor: outboundDate ? '#A6E3E9' : '#8CB9BD' }]}
+          onPress={() => handleDatePress('return')}
+          disabled={!outboundDate}
+        >
 
-        <Text style={styles.dateText}>Retur</Text>
-        <Text style={styles.dateValue}>{returnDate ? returnDate.toDateString() : 'Selectează data'}</Text>
-      </TouchableOpacity>
+          <Text style={styles.dateText}>Retur</Text>
+          <Text style={styles.dateValue}>{returnDate ? returnDate.toDateString() : 'Selectează data'}</Text>
+        </TouchableOpacity>
 
         {isDatePickerVisible && (
           <View style={[styles.datePickerContainer, { top: datePickerPosition.current }]}>
 
-          <DatePicker
-          mode='calendar'
-          selected={date}
-          style={styles.CalendarStyle}
-          minimumDate={currentSelectingDate === 'return' ? minDateForReturn : getToday()}
-          onDateChange={onDateChange}
-        />
+            <DatePicker
+              mode='calendar'
+              selected={date}
+              style={styles.CalendarStyle}
+              minimumDate={currentSelectingDate === 'return' ? minDateForReturn : getToday()}
+              onDateChange={onDateChange}
+            />
             <TouchableOpacity onPress={() => setIsDatePickerVisible(false)} style={styles.closeButton}>
               <Text style={styles.searchButtonText}>Close</Text>
             </TouchableOpacity>
@@ -211,15 +211,15 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   closeTextButton: {
-    fontSize: 16, 
-   
+    fontSize: 16,
 
-  }, 
+
+  },
 
   datePickerContainer: {
     position: 'relative',
     backgroundColor: '#A6E3E9',
-    borderRadius: 22, 
+    borderRadius: 22,
     marginVertical: 10,
 
   },
@@ -228,7 +228,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     padding: 5,
     marginHorizontal: 100,
-    marginBottom: 10,  
+    marginBottom: 10,
     alignItems: 'center',
     shadowColor: '#000',
     shadowOffset: {
@@ -238,7 +238,7 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 3,
-    
+
   },
   formLabel: {
     fontSize: 24,
@@ -248,14 +248,14 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    color: "white", 
+    color: "white",
     marginBottom: 20,
   },
-  CalendarStyle : {
-    backgroundColor: '#A6E3E9',  
-    borderRadius: 22, 
-  
-  }, 
+  CalendarStyle: {
+    backgroundColor: '#A6E3E9',
+    borderRadius: 22,
+
+  },
 
   textInput: {
     flex: 1,
@@ -267,7 +267,7 @@ const styles = StyleSheet.create({
   },
   swapIcon: {
     paddingHorizontal: 10,
-    color: "black", 
+    color: "black",
   },
   datePickerRow: {
     marginBottom: 20,
@@ -284,10 +284,10 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#A6E3E9', // Background pentru data de tur
   },
-  
+
   dateText: {
     fontSize: 16,
-    color: "black", 
+    color: "black",
   },
   dateValue: {
     fontSize: 16,
@@ -297,7 +297,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 20,
-    marginTop : 20, 
+    marginTop: 20,
 
   },
   personIcon: {
@@ -333,10 +333,10 @@ const styles = StyleSheet.create({
 
   dropdownContainer: {
     flex: 1,
-    borderRadius: 10, 
-    backgroundColor: "#A6E3E9", 
-    color: "white", 
-    },
+    borderRadius: 10,
+    backgroundColor: "#A6E3E9",
+    color: "white",
+  },
   dropdownTrigger: {
     flexDirection: 'row',
     alignItems: 'center',
@@ -356,9 +356,10 @@ const styles = StyleSheet.create({
     backgroundColor: '#53a8b6',
   },
   dropdownItem: {
-    color: "white", 
-    padding: 10,}
-    ,
+    color: "white",
+    padding: 10,
+  }
+  ,
 
 
   headerText: {

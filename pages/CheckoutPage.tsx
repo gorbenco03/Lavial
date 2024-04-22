@@ -8,7 +8,7 @@ const CheckoutPage = ({ navigation, route }: any) => {
 
   const { from, to, outboundDate, returnDate, passengers } = route.params;
 
-  const studentDiscounts: any  = {
+  const studentDiscounts: any = {
     "Chișinău-Timișoara": 50,
     "Timișoara-Chișinău": 50,
     "Chișinău-Deva": 45,
@@ -20,20 +20,20 @@ const CheckoutPage = ({ navigation, route }: any) => {
     "Chișinău-Brașov": 25,
     "Brașov-Chișinău": 25,
     // Ensure to add reverse routes as well
-};
+  };
 
 
-const destinationPrices: any  = {
+  const destinationPrices: any = {
     "Chișinău-Timișoara": 200,
     "Chișinău-Deva": 175,
     "Chișinău-Sibiu": 140,
     "Chișinău-Alba Iulia": 150,
-    "Chișinău-Brașov": 125, 
-    "Chișinău-Onești": 90, 
-    "Chișinău-Adjud": 75, 
-    "Chișinău-Tecuci": 75, 
-    "Chișinău-Bârlad": 50, 
-    "Chișinău-Huși": 50, 
+    "Chișinău-Brașov": 125,
+    "Chișinău-Onești": 90,
+    "Chișinău-Adjud": 75,
+    "Chișinău-Tecuci": 75,
+    "Chișinău-Bârlad": 50,
+    "Chișinău-Huși": 50,
     // Add other destinations and prices here
   };
 
@@ -46,10 +46,10 @@ const destinationPrices: any  = {
     }
   });
 
-  
+
 
   const calculateTotalPrice = () => {
-    return passengers.reduce((total: any, passenger: { isStudent: any; }) : any => {
+    return passengers.reduce((total: any, passenger: { isStudent: any; }): any => {
       const basePrice = destinationPrices[`${from}-${to}`] || 0;
       let totalPrice = basePrice;
 
@@ -70,18 +70,26 @@ const destinationPrices: any  = {
 
   const handlePaymentPress = () => {
     setModalVisible(true);
+    console.log("Travel details:", { from, to, outboundDate, returnDate, passengers });
+
+
   };
+
 
   const navigateToFinalPage = (paymentDetails: any) => {
     navigation.navigate('Final', {
-      from,
-      to,
-      outboundDate,
-      returnDate,
-      passengers,
-      ...paymentDetails,
+      travelDetails: {
+        from,
+        to,
+        outboundDate,
+        returnDate,
+        passengers,
+        ...paymentDetails,
+      }
     });
   };
+
+
   return (
     <ScrollView style={styles.container}>
       <Text style={styles.headerText}>Detalii despre călătorie</Text>
@@ -96,13 +104,13 @@ const destinationPrices: any  = {
           <FontAwesome name="calendar" size={18} color="#333" />
         </View>
         <Text style={styles.detailsRoute}>
-        <FontAwesome name="location-arrow" size={16} color="#333" /> {from} <FontAwesome name="long-arrow-right" size={16} color="#333" /> {to}
+          <FontAwesome name="location-arrow" size={16} color="#333" /> {from} <FontAwesome name="long-arrow-right" size={16} color="#333" /> {to}
         </Text>
       </View>
 
       {passengers.map((passenger: { name: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; surname: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; phone: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; email: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; passportSerial: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; isStudent: any; studentIdSerial: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; }, index: React.Key | null | undefined) => (
         <View key={index} style={styles.section}>
-          <Text style={styles.sectionTitle}>Informații personale despre pasagerul {(index as number ) + 1}</Text>
+          <Text style={styles.sectionTitle}>Informații personale despre pasagerul {(index as number) + 1}</Text>
           <Text style={styles.detailsName}>
             <FontAwesome name="user-circle-o" size={20} color="#333" /> {passenger.name} {passenger.surname}
           </Text>
@@ -150,8 +158,8 @@ const destinationPrices: any  = {
           <View style={styles.modalView}>
             <Text style={styles.modalText}>Detalii pentru plată</Text>
             <CardDetailsComponent
-              onConfirmPayment={({ cardNumber, expiryDate, cvc, cardHolderName } : any) => {
-                console.log('Detaliile cardului:', cardNumber, expiryDate, cvc, cardHolderName);
+              onConfirmPayment={({ cardNumber, expiryDate, cvc, cardHolderName }: any) => {
+
                 navigateToFinalPage({ cardNumber, expiryDate, cvc, cardHolderName });
               }}
             />
