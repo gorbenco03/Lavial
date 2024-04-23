@@ -37,6 +37,7 @@
       setPassengers(updatedPassengers);
     };
     
+    
 
     const goToCheckout = () => {
       for (let i = 0; i < passengers.length; i++) {

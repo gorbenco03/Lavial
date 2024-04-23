@@ -1,12 +1,68 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, Modal, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
-import CardDetailsComponent from '../CardDetailsComponent';
-
+import { StripeProvider, useStripe} from '@stripe/stripe-react-native';
 const CheckoutPage = ({ navigation, route }: any) => {
-  const [modalVisible, setModalVisible] = useState(false);
-
+  const { initPaymentSheet, presentPaymentSheet} = useStripe();
+  const [loading, setLoading] = useState(false)
   const { from, to, outboundDate, returnDate, passengers } = route.params;
+  const fetchPaymentSheetParams = async () => {
+    const totalAmount = calculateTotalPrice() * 100;
+    const publishableKey = 'pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6'; 
+    const response = await fetch(`http://192.168.3.35:3000/payment-sheet`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({ totalAmount })
+    });
+    const { paymentIntent, ephemeralKey, customer} = await response.json();
+
+    return {
+      paymentIntent,
+      ephemeralKey,
+      publishableKey, 
+      customer,
+    };
+  };
+  
+  const initializePaymentSheet = async () => {
+    const {
+      paymentIntent,
+      ephemeralKey,
+      customer,
+      publishableKey,
+    } = await fetchPaymentSheetParams();
+    
+    const { error } = await initPaymentSheet({
+      merchantDisplayName: "Lavial",
+      customerId: customer,
+      customerEphemeralKeySecret: ephemeralKey,
+      paymentIntentClientSecret: paymentIntent,
+
+      defaultBillingDetails: {
+        name: 'Chiril Gorbenco',
+        email: 'chiril.gorbenco@icloud.com', 
+      }
+    });
+    if (!error) {
+      setLoading(true);
+    }
+  };
+  useEffect(() => {
+    initializePaymentSheet();
+  }, []);
+  const openPaymentSheet = async () => {
+    const { error } = await presentPaymentSheet();
+
+    if (error) {
+      Alert.alert(`Error code: ${error.code}`, error.message);
+    } 
+      else {
+       
+        navigateToFinalPage() ;
+    }
+  };
 
   const studentDiscounts: any = {
     "Chișinău-Timișoara": 50,
@@ -19,7 +75,7 @@ const CheckoutPage = ({ navigation, route }: any) => {
     "Alba Iulia-Chișinău": 40,
     "Chișinău-Brașov": 25,
     "Brașov-Chișinău": 25,
-    // Ensure to add reverse routes as well
+    // Ensure to add reverse routes as well 
   };
 
 
@@ -68,15 +124,11 @@ const CheckoutPage = ({ navigation, route }: any) => {
     }, 0);
   };
 
-  const handlePaymentPress = () => {
-    setModalVisible(true);
-    console.log("Travel details:", { from, to, outboundDate, returnDate, passengers });
 
 
-  };
 
 
-  const navigateToFinalPage = (paymentDetails: any) => {
+  const navigateToFinalPage = () => {
     navigation.navigate('Final', {
       travelDetails: {
         from,
@@ -84,92 +136,72 @@ const CheckoutPage = ({ navigation, route }: any) => {
         outboundDate,
         returnDate,
         passengers,
-        ...paymentDetails,
       }
     });
   };
 
 
   return (
-    <ScrollView style={styles.container}>
-      <Text style={styles.headerText}>Detalii despre călătorie</Text>
+    <StripeProvider
+      publishableKey="pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6"
 
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Detalii cursă</Text>
-        <View style={styles.detailsRow}>
-          <FontAwesome name="calendar" size={18} color="#333" />
-          <Text style={styles.detailsTime}>{outboundDate}</Text>
-          <FontAwesome name="long-arrow-right" size={16} color="#333" />
-          <Text style={styles.detailsTime}>{returnDate}</Text>
-          <FontAwesome name="calendar" size={18} color="#333" />
-        </View>
-        <Text style={styles.detailsRoute}>
-          <FontAwesome name="location-arrow" size={16} color="#333" /> {from} <FontAwesome name="long-arrow-right" size={16} color="#333" /> {to}
-        </Text>
-      </View>
 
-      {passengers.map((passenger: { name: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; surname: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; phone: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; email: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; passportSerial: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; isStudent: any; studentIdSerial: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; }, index: React.Key | null | undefined) => (
-        <View key={index} style={styles.section}>
-          <Text style={styles.sectionTitle}>Informații personale despre pasagerul {(index as number) + 1}</Text>
-          <Text style={styles.detailsName}>
-            <FontAwesome name="user-circle-o" size={20} color="#333" /> {passenger.name} {passenger.surname}
+      urlScheme="your-url-scheme" // required for 3D Secure and bank redirects
+     // required for Apple Pay
+    >
+    
+      <ScrollView style={styles.container}>
+        <Text style={styles.headerText}>Detalii despre călătorie</Text>
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Detalii cursă</Text>
+          <View style={styles.detailsRow}>
+            <FontAwesome name="calendar" size={18} color="#333" />
+            <Text style={styles.detailsTime}>{outboundDate}</Text>
+            <FontAwesome name="long-arrow-right" size={16} color="#333" />
+            <Text style={styles.detailsTime}>{returnDate}</Text>
+            <FontAwesome name="calendar" size={18} color="#333" />
+          </View>
+          <Text style={styles.detailsRoute}>
+            <FontAwesome name="location-arrow" size={16} color="#333" /> {from} <FontAwesome name="long-arrow-right" size={16} color="#333" /> {to}
           </Text>
-          <View style={styles.detailsRow}>
-            <FontAwesome name="phone" size={20} color="#333" />
-            <Text style={styles.detailsSeat}>{passenger.phone}</Text>
-          </View>
-          <View style={styles.detailsRow}>
-            <FontAwesome name="envelope-o" size={20} color="#333" />
-            <Text style={styles.detailsExtras}>{passenger.email}</Text>
-          </View>
-          <View style={styles.detailsRow}>
-            <FontAwesome name="id-card-o" size={18} color="#333" />
-            <Text style={styles.detailsExtras}>{passenger.passportSerial}</Text>
-          </View>
-          {passenger.isStudent && (
-            <View style={styles.detailsRow}>
-              <FontAwesome name="graduation-cap" size={18} color="#333" />
-              <Text style={styles.detailsExtras}>{passenger.studentIdSerial}</Text>
-            </View>
-          )}
         </View>
-      ))}
-
-      <View style={styles.totalSection}>
-        <Text style={styles.totalTitle}>Total de plată</Text>
-        <Text style={styles.totalPrice}>RON {calculateTotalPrice()}</Text>
-      </View>
-
-      <TouchableOpacity style={styles.payButton} onPress={handlePaymentPress}>
+        {passengers.map((passenger: { name: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; surname: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; phone: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; email: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; passportSerial: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; isStudent: any; studentIdSerial: string | number | boolean | React.ReactElement<any, string | React.JSXElementConstructor<any>> | Iterable<React.ReactNode> | React.ReactPortal | null | undefined; }, index: React.Key | null | undefined) => (
+          <View key={index} style={styles.section}>
+            <Text style={styles.sectionTitle}>Informații personale despre pasagerul {(index as number) + 1}</Text>
+            <Text style={styles.detailsName}>
+              <FontAwesome name="user-circle-o" size={20} color="#333" /> {passenger.name} {passenger.surname}
+            </Text>
+            <View style={styles.detailsRow}>
+              <FontAwesome name="phone" size={20} color="#333" />
+              <Text style={styles.detailsSeat}>{passenger.phone}</Text>
+            </View>
+            <View style={styles.detailsRow}>
+              <FontAwesome name="envelope-o" size={20} color="#333" />
+              <Text style={styles.detailsExtras}>{passenger.email}</Text>
+            </View>
+            <View style={styles.detailsRow}>
+              <FontAwesome name="id-card-o" size={18} color="#333" />
+              <Text style={styles.detailsExtras}>{passenger.passportSerial}</Text>
+            </View>
+            {passenger.isStudent && (
+              <View style={styles.detailsRow}>
+                <FontAwesome name="graduation-cap" size={18} color="#333" />
+                <Text style={styles.detailsExtras}>{passenger.studentIdSerial}</Text>
+              </View>
+            )}
+          </View>
+        ))}
+        <View style={styles.totalSection}>
+          <Text style={styles.totalTitle}>Total de plată</Text>
+          <Text style={styles.totalPrice}>RON {calculateTotalPrice()}</Text>
+        </View>
+        <TouchableOpacity style={styles.payButton} disabled={!loading} onPress={openPaymentSheet}>
         <Text style={styles.payButtonText}>Plată cu cardul</Text>
         <MaterialCommunityIcons name="credit-card-outline" size={24} color="white" />
       </TouchableOpacity>
-
-      <Modal
-        animationType="slide"
-        transparent={true}
-        visible={modalVisible}
-        onRequestClose={() => {
-          Alert.alert('Modal has been closed.');
-          setModalVisible(!modalVisible);
-        }}
-      >
-        <View style={styles.centeredView}>
-          <View style={styles.modalView}>
-            <Text style={styles.modalText}>Detalii pentru plată</Text>
-            <CardDetailsComponent
-              onConfirmPayment={({ cardNumber, expiryDate, cvc, cardHolderName }: any) => {
-
-                navigateToFinalPage({ cardNumber, expiryDate, cvc, cardHolderName });
-              }}
-            />
-            <TouchableOpacity style={styles.buttonClose} onPress={() => setModalVisible(!modalVisible)}>
-              <Text style={styles.textStyle}>Închide</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
-    </ScrollView>
+      </ScrollView>
+      </StripeProvider>
+    
   );
 };
 
@@ -288,7 +320,7 @@ const styles = StyleSheet.create({
   },
   payButtonText: {
     fontSize: 16,
-    fontWeight: 'bold',
+    fontWeight: 'normal',
     color: '#fff',
   },
   centeredView: {
@@ -297,39 +329,12 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginTop: 22,
   },
-  modalView: {
-    margin: 20,
-    backgroundColor: 'white',
-    borderRadius: 20,
-    padding: 35,
-    alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.25,
-    shadowRadius: 4,
-    elevation: 5,
-  },
-  buttonClose: {
-    backgroundColor: '#2196F3',
-    borderRadius: 20,
-    padding: 10,
-    elevation: 2,
-    marginTop: 15,
-  },
-  textStyle: {
-    color: 'white',
-    fontWeight: 'bold',
-    textAlign: 'center',
-  },
-  modalText: {
-    marginBottom: 15,
-    textAlign: 'center',
-    fontSize: 18,
-  },
+
+
+
 });
 
 
 export default CheckoutPage;
+
+

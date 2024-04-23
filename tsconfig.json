@@ -3,7 +3,7 @@
   "compilerOptions": {
     "strict": true, 
     "typeRoots": ["./node_modules/@types", "./types"],
-    "types": ["react-native-html-to-pdf"]
+    "types": ["react-native-html-to-pdf", "node"]
   }, 
  
   

@@ -1,11 +1,13 @@
-
-
 import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as FileSystem from 'expo-file-system';
 import * as Calendar from 'expo-calendar';
+import RNFetchBlob from 'rn-fetch-blob';
+
+import * as MediaLibrary from 'expo-media-library';
+
 
 
 const FinalPage = ({ route }: any) => {
@@ -14,7 +16,7 @@ const FinalPage = ({ route }: any) => {
   useEffect(() => {
     if (travelDetails) {
       const qrDataArray: Array<string> = [];
-  
+
       travelDetails.passengers.forEach((passenger: any) => {
         const qrStringOutbound = JSON.stringify({
           name: passenger.name,
@@ -29,9 +31,9 @@ const FinalPage = ({ route }: any) => {
           date: travelDetails.outboundDate,
           tripType: 'Outbound'
         });
-  
+
         qrDataArray.push(qrStringOutbound);
-  
+
         if (travelDetails.returnDate) {
           // Generează un QR code separat pentru data de întoarcere, dacă există
           const qrStringReturn = JSON.stringify({
@@ -47,16 +49,16 @@ const FinalPage = ({ route }: any) => {
             date: travelDetails.returnDate,
             tripType: 'Return'
           });
-          
+
           qrDataArray.push(qrStringReturn);
         }
       });
-  
+
       setQrData(qrDataArray);
     }
   }, [travelDetails]);
-  
-  
+
+
 
   const saveQRAsImage = (data: string, filename: string) => {
     FileSystem.writeAsStringAsync(FileSystem.documentDirectory + filename, data, { encoding: FileSystem.EncodingType.Base64 })
@@ -70,7 +72,7 @@ const FinalPage = ({ route }: any) => {
       });
   };
 
-  
+
 
   const handleAddToCalendar = async () => {
     try {
@@ -80,14 +82,14 @@ const FinalPage = ({ route }: any) => {
         Alert.alert('Permissions required', 'Need calendar permissions to add events');
         return;
       }
-  
+
       // Get all available calendars
       const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
       let calendarId;
-  
+
       // Check if there is any writable calendar
       const writableCalendar = calendars.find(cal => cal.allowsModifications);
-  
+
       if (writableCalendar) {
         calendarId = writableCalendar.id;
       } else {
@@ -95,7 +97,7 @@ const FinalPage = ({ route }: any) => {
         Alert.alert('No Writable Calendar', 'No writable calendar available. Please check your calendar settings.');
         return;
       }
-  
+
       // Define event details
       const eventDetails = {
         title: 'Trip from ' + travelDetails.from + ' to ' + travelDetails.to,
@@ -104,25 +106,77 @@ const FinalPage = ({ route }: any) => {
         timeZone: 'GMT+0',
         location: travelDetails.to,
       };
-  
+
       // Add event to the calendar
       const eventId = await Calendar.createEventAsync(calendarId, eventDetails);
       Alert.alert('Bravo', 'Calatoria ta a fost adaugata in calendar');
     } catch (error) {
       console.error(error);
-      Alert.alert('Error', error.message);
+      Alert.alert('Error');
+    }
+  };
+
+
+
+
+
+  const generatePDF = async (qrDataArray: string[]) => {
+    try {
+      const response = await fetch('http://192.168.3.35:3000/generatePdf', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ qrDataArray }),
+      });
+  
+      const arrayBuffer = await response.arrayBuffer();
+      const base64String = Buffer.from(arrayBuffer).toString('base64');
+  
+      // Salvați fișierul temporar în sistemul de fișiere local
+      const localUri = `${FileSystem.cacheDirectory}ticket.pdf`;
+      await FileSystem.writeAsStringAsync(localUri, base64String, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+  
+      // Verificați permisiunile pentru biblioteca media
+      const { status } = await MediaLibrary.requestPermissionsAsync();
+  
+      if (status !== 'granted') {
+        throw new Error('Permission to access media library denied');
+      }
+  
+      // Salvați fișierul în biblioteca media
+      const asset = await MediaLibrary.createAssetAsync(localUri);
+      const fileUri = asset.uri;
+  
+      return fileUri;
+    } catch (error: any) {
+      console.error('Error generating PDF:', error);
+      throw error;
     }
   };
   
   
-  
 
   
+  
+  const handleDownloadTicket = async () => {
+    try {
+      const fileUri = await generatePDF(qrData);
+      Alert.alert('Download Complete', `Ticket saved at ${fileUri}`);
+    } catch (error) {
+      Alert.alert('Download Error', `Failed to download the ticket:`);
+    }
+  };
+
+
+
 
   return (
     <ScrollView style={styles.containerScroll}>
       <View style={styles.container}>
-      
+
         <Text style={styles.headerText}>Booking Confirmed</Text>
         {qrData.map((qrString, index) => (
           <View key={index} style={styles.section}>
@@ -132,20 +186,21 @@ const FinalPage = ({ route }: any) => {
               size={200}
             />
             <Text style={styles.ticketText}>Prezentati acest QR la sofer.</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={() => saveQRAsImage(qrString, `qrCode_${index}.png`)}>
-              <Icon name="payment" size={20} color="#fff" />
-              <Text style={styles.searchButtonText}>Descarca biletul</Text>
+            <TouchableOpacity style={styles.closeButton} onPress={handleDownloadTicket}>
+              <Icon name="download" size={20} color="#fff" />
+              <Text style={styles.searchButtonText}>Descarcă PDF-ul biletului</Text>
             </TouchableOpacity>
+
             <TouchableOpacity style={styles.closeButton} onPress={handleAddToCalendar}>
               <Icon name="event" size={20} color="#fff" />
               <Text style={styles.searchButtonText}>Adauga in calendar</Text>
             </TouchableOpacity>
           </View>
         ))}
-        
+
       </View>
-      </ScrollView>
-   
+    </ScrollView>
+
   );
 };
 
@@ -172,7 +227,7 @@ const styles = StyleSheet.create({
     justifyContent: 'flex-start',
     marginBottom: 5, // Spațiu între butoane
     width: '70%',
-    marginHorizontal:5,
+    marginHorizontal: 5,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,
@@ -186,7 +241,7 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     fontWeight: 'bold',
-    marginHorizontal:10, 
+    marginHorizontal: 10,
 
   },
   headerText: {

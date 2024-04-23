@@ -15,13 +15,24 @@
       "**/*"
     ],
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true, 
+      "bundleIdentifier": "com.yourapp.bundle",
+    "infoPlist": {
+    "NSPhotoLibraryUsageDescription": "App needs access to photo library in order to save PDF",
+    "NSPhotoLibraryAddUsageDescription": "App needs access to photo library in order to save PDF",
+    "NSFileProviderDomainUsageDescription": "App needs access to files for PDF saving"
+  }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff", 
+        "permissions": [
+          "WRITE_EXTERNAL_STORAGE",
+          "READ_EXTERNAL_STORAGE"
+        ]
       }
+      
     },
     "web": {
       "favicon": "./assets/favicon.png"
