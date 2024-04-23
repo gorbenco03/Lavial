@@ -353,10 +353,11 @@ const styles = StyleSheet.create({
     borderWidth: 0,
     borderColor: '#ddd',
     borderRadius: 10,
-    backgroundColor: '#53a8b6',
+    
+    backgroundColor: '#A6E3E9',
   },
   dropdownItem: {
-    color: "white",
+    color: "black",
     padding: 10,
   }
   ,

@@ -5,35 +5,58 @@ import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'rea
 import QRCode from 'react-native-qrcode-svg';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 import * as FileSystem from 'expo-file-system';
+import * as Calendar from 'expo-calendar';
+
 
 const FinalPage = ({ route }: any) => {
   const { travelDetails } = route.params;
   const [qrData, setQrData] = useState<Array<string>>([]);
-
   useEffect(() => {
     if (travelDetails) {
       const qrDataArray: Array<string> = [];
-
+  
       travelDetails.passengers.forEach((passenger: any) => {
-        const qrStringOutbound = JSON.stringify({ ...travelDetails, tripType: 'Outbound', passenger });
+        const qrStringOutbound = JSON.stringify({
+          name: passenger.name,
+          surname: passenger.surname,
+          phone: passenger.phone,
+          email: passenger.email,
+          passportSerial: passenger.passportSerial,
+          isStudent: passenger.isStudent,
+          studentIdSerial: passenger.studentIdSerial,
+          from: travelDetails.from,
+          to: travelDetails.to,
+          date: travelDetails.outboundDate,
+          tripType: 'Outbound'
+        });
+  
         qrDataArray.push(qrStringOutbound);
-
+  
         if (travelDetails.returnDate) {
-          // Invert "from" and "to" for return trip
+          // Generează un QR code separat pentru data de întoarcere, dacă există
           const qrStringReturn = JSON.stringify({
-            ...travelDetails,
-            tripType: 'Return',
-            passenger,
-            from: travelDetails.to,
-            to: travelDetails.from,
+            name: passenger.name,
+            surname: passenger.surname,
+            phone: passenger.phone,
+            email: passenger.email,
+            passportSerial: passenger.passportSerial,
+            isStudent: passenger.isStudent,
+            studentIdSerial: passenger.studentIdSerial,
+            from: travelDetails.to, // inversăm locurile pentru biletul de întoarcere
+            to: travelDetails.from, // inversăm locurile pentru biletul de întoarcere
+            date: travelDetails.returnDate,
+            tripType: 'Return'
           });
+          
           qrDataArray.push(qrStringReturn);
         }
       });
-
+  
       setQrData(qrDataArray);
     }
   }, [travelDetails]);
+  
+  
 
   const saveQRAsImage = (data: string, filename: string) => {
     FileSystem.writeAsStringAsync(FileSystem.documentDirectory + filename, data, { encoding: FileSystem.EncodingType.Base64 })
@@ -47,21 +70,63 @@ const FinalPage = ({ route }: any) => {
       });
   };
 
-  const handleAddToCalendar = () => {
-    // Implementare pentru adăugare în Calendar
-  };
+  
 
-  const handleAddToApplePay = () => {
-    // Implementare pentru adăugare în Apple Pay
+  const handleAddToCalendar = async () => {
+    try {
+      // Request calendar permissions
+      const { status } = await Calendar.requestCalendarPermissionsAsync();
+      if (status !== 'granted') {
+        Alert.alert('Permissions required', 'Need calendar permissions to add events');
+        return;
+      }
+  
+      // Get all available calendars
+      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
+      let calendarId;
+  
+      // Check if there is any writable calendar
+      const writableCalendar = calendars.find(cal => cal.allowsModifications);
+  
+      if (writableCalendar) {
+        calendarId = writableCalendar.id;
+      } else {
+        // Alert if no writable calendar is available
+        Alert.alert('No Writable Calendar', 'No writable calendar available. Please check your calendar settings.');
+        return;
+      }
+  
+      // Define event details
+      const eventDetails = {
+        title: 'Trip from ' + travelDetails.from + ' to ' + travelDetails.to,
+        startDate: new Date(travelDetails.outboundDate),
+        endDate: new Date(new Date(travelDetails.outboundDate).getTime() + 2 * 60 * 60 * 1000), // assuming 2 hours duration
+        timeZone: 'GMT+0',
+        location: travelDetails.to,
+      };
+  
+      // Add event to the calendar
+      const eventId = await Calendar.createEventAsync(calendarId, eventDetails);
+      Alert.alert('Bravo', 'Calatoria ta a fost adaugata in calendar');
+    } catch (error) {
+      console.error(error);
+      Alert.alert('Error', error.message);
+    }
   };
+  
+  
+  
+
+  
 
   return (
-    <ScrollView>
+    <ScrollView style={styles.containerScroll}>
       <View style={styles.container}>
+      
         <Text style={styles.headerText}>Booking Confirmed</Text>
         {qrData.map((qrString, index) => (
           <View key={index} style={styles.section}>
-            <Text style={styles.sectionHeader}>Bilet pentru {travelDetails.passengers[index].name} {travelDetails.passengers[index].surname}</Text>
+            {/* <Text style={styles.sectionHeader}>Bilet pentru {travelDetails.passengers[index].name} {travelDetails.passengers[index].surname}</Text> */}
             <QRCode
               value={qrString}
               size={200}
@@ -75,14 +140,12 @@ const FinalPage = ({ route }: any) => {
               <Icon name="event" size={20} color="#fff" />
               <Text style={styles.searchButtonText}>Adauga in calendar</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.closeButton} onPress={handleAddToApplePay}>
-              <Icon name="apple" size={20} color="#fff" />
-              <Text style={styles.searchButtonText}>Adauga la Apple Pay</Text>
-            </TouchableOpacity>
           </View>
         ))}
+        
       </View>
-    </ScrollView>
+      </ScrollView>
+   
   );
 };
 
@@ -96,6 +159,9 @@ const styles = StyleSheet.create({
     paddingVertical: 20,
     alignItems: 'center',
     justifyContent: 'center',
+  },
+  containerScroll: {
+    backgroundColor: '#E3FDFD',
   },
   closeButton: {
     backgroundColor: '#393E46',
