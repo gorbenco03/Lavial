@@ -6,11 +6,17 @@ import FirstPage from './pages/FirstPage'; // Componenta ta modificată
 import SecondPage from './pages/SecondPage'; // O altă pagină
 import CheckoutPage from './pages/CheckoutPage';
 import FinalPage from './pages/FinalPage';
+import { StripeProvider } from '@stripe/stripe-react-native';
 
 const Stack = createNativeStackNavigator();
 
 const App = () => {
   return (
+    <StripeProvider
+      publishableKey="pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6"
+      urlScheme="your-url-scheme"  // required for 3D Secure and bank redirects
+      // merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}" // required for Apple Pay
+    >
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Acasa">
         <Stack.Screen 
@@ -67,6 +73,7 @@ const App = () => {
         />
       </Stack.Navigator>
     </NavigationContainer>
+    </StripeProvider>
   );
 };
 

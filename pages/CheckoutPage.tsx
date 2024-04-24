@@ -9,7 +9,7 @@ const CheckoutPage = ({ navigation, route }: any) => {
   const fetchPaymentSheetParams = async () => {
     const totalAmount = calculateTotalPrice() * 100;
     const publishableKey = 'pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6'; 
-    const response = await fetch(`http://192.168.3.35:3000/payment-sheet`, {
+    const response = await fetch(`http://172.20.10.10:3000/payment-sheet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -65,31 +65,31 @@ const CheckoutPage = ({ navigation, route }: any) => {
   };
 
   const studentDiscounts: any = {
-    "Chișinău-Timișoara": 50,
-    "Timișoara-Chișinău": 50,
-    "Chișinău-Deva": 45,
-    "Deva-Chișinău": 45,
-    "Chișinău-Sibiu": 35,
-    "Sibiu-Chișinău": 35,
-    "Chișinău-Alba Iulia": 40,
-    "Alba Iulia-Chișinău": 40,
-    "Chișinău-Brașov": 25,
-    "Brașov-Chișinău": 25,
+    "Chisinau-Timisoara": 50,
+    "Timisoara-Chisinau": 50,
+    "Chisinau-Deva": 45,
+    "Deva-Chisinau": 45,
+    "Chisinau-Sibiu": 35,
+    "Sibiu-Chisinau": 35,
+    "Chisinau-Alba Iulia": 40,
+    "Alba Iulia-Chisinau": 40,
+    "Chisinau-Brasov": 25,
+    "Brasov-Chisinau": 25,
     // Ensure to add reverse routes as well 
   };
 
 
   const destinationPrices: any = {
-    "Chișinău-Timișoara": 200,
-    "Chișinău-Deva": 175,
-    "Chișinău-Sibiu": 140,
-    "Chișinău-Alba Iulia": 150,
-    "Chișinău-Brașov": 125,
-    "Chișinău-Onești": 90,
-    "Chișinău-Adjud": 75,
-    "Chișinău-Tecuci": 75,
-    "Chișinău-Bârlad": 50,
-    "Chișinău-Huși": 50,
+    "Chisinau-Timisoara": 200,
+    "Chisinau-Deva": 175,
+    "Chisinau-Sibiu": 140,
+    "Chisinau-Alba Iulia": 150,
+    "Chisinau-Brasov": 125,
+    "Chisinau-Onești": 90,
+    "Chisinau-Adjud": 75,
+    "Chisinau-Tecuci": 75,
+    "Chisinau-Barlad": 50,
+    "Chisinau-Husi": 50,
     // Add other destinations and prices here
   };
 

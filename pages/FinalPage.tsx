@@ -12,6 +12,7 @@ const FinalPage = ({ route }: any) => {
       const qrDataArray: Array<string> = [];
 
       travelDetails.passengers.forEach((passenger: any) => {
+        console.log('Email-ul pasagerului:', passenger.email);
         const qrStringOutbound = JSON.stringify({
           name: passenger.name,
           surname: passenger.surname,
@@ -47,44 +48,54 @@ const FinalPage = ({ route }: any) => {
           qrDataArray.push(qrStringReturn);
         }
       });
-
+     
       setQrData(qrDataArray);
     }
   }, [travelDetails]);
 
-
-
-  
-
-  const handleSendEmail = async ( passengerIndex: number) => {
+  const sendDataToBackend = async (qrDataArray: any, email:string)=> {
     try {
-      const passengerEmail = travelDetails.passengers.email ; // Presupunând că obiectul passenger conține câmpul email
-      const response = await fetch('http://192.168.3.35:3000/send-email', {
+      const response = await fetch('http://172.20.10.10:3000/send-qr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({
-          email: passengerEmail, // Utilizați adresa de email a pasagerului
-          tickets: [
-            { type: 'Outbound', data: qrDataItem.outbound.data },
-            { type: 'Return', data: qrDataItem.return ? qrDataItem.return.data : null }
-          ]
-        }),
+        body: JSON.stringify({ qrData: qrDataArray,
+           email: email}), // Make sure this matches what the server expects
       });
-      const result = await response.text();
-      Alert.alert('Email Sent', result.message);
+  
+      if (!response.ok) {
+        throw new Error(`HTTP error! Status: ${response.status}`);
+      }
+  
+      const responseData = await response.json(); // Try to parse as JSON
+      console.log('Data sent to server:', responseData);
     } catch (error) {
-      console.error(error);
-      Alert.alert('Error', 'Failed to send email');
+      if (error instanceof SyntaxError) {
+        console.error('Failed to parse JSON:', error);
+      } else {
+        console.error('Failed to send QR data:', error);
+      }
     }
   };
+  
+
+
+  
+
+  useEffect(() => {
+    // Assuming qrData is already populated with QR code data
+    if (qrData.length > 0 && travelDetails.passengers.length > 0) {
+      const emailToSend = travelDetails.passengers[0].email; 
+      sendDataToBackend(qrData, emailToSend);
+    }
+  }, [qrData]);
 
 
   return (
     <ScrollView style={styles.containerScroll}>
       <View style={styles.container}>
-        <Text style={styles.headerText}>Booking Confirmed</Text>
+        <Text style={styles.headerText}>Booking Confdirmed</Text>
         {qrData.map((qrString, index) => (
           <View key={index} style={styles.section}>
             {/* <Text style={styles.sectionHeader}>Bilet pentru {travelDetails.passengers[index].name} {travelDetails.passengers[index].surname}</Text> */}
@@ -93,7 +104,7 @@ const FinalPage = ({ route }: any) => {
               size={200}
             />
             <Text style={styles.ticketText}>Prezentati acest QR la sofer.</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={() => handleSendEmail(index)}>
+            <TouchableOpacity style={styles.closeButton}>
               <Icon name="event" size={20} color="#fff" />
               <Text style={styles.searchButtonText}>Adauga in calendar</Text>
             </TouchableOpacity>

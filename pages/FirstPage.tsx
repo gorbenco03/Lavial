@@ -5,8 +5,8 @@ import DatePicker from 'react-native-modern-datepicker';
 import { getToday, getFormatedDate } from "react-native-modern-datepicker";
 
 const cities = [
-  'Chișinău', 'Huși', 'Tecuci', 'Adjud', 'Onești',
-  'Brașov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
+  'Chisinau', 'Husi', 'Tecuci', 'Adjud', 'Onesti',
+  'Brasov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timisoara'
 ];
 
 const Dropdown = ({ items, selectedValue, onValueChange, excludedItems, placeholder }: any) => {
