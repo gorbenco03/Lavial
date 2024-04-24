@@ -1,14 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
+import { View, Text, StyleSheet,  Alert, TouchableOpacity, ScrollView } from 'react-native';
 import QRCode from 'react-native-qrcode-svg';
+import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import Icon from 'react-native-vector-icons/MaterialIcons';
-import * as FileSystem from 'expo-file-system';
-import * as Calendar from 'expo-calendar';
-import RNFetchBlob from 'rn-fetch-blob';
-
-import * as MediaLibrary from 'expo-media-library';
-
-
 
 const FinalPage = ({ route }: any) => {
   const { travelDetails } = route.params;
@@ -60,123 +54,36 @@ const FinalPage = ({ route }: any) => {
 
 
 
-  const saveQRAsImage = (data: string, filename: string) => {
-    FileSystem.writeAsStringAsync(FileSystem.documentDirectory + filename, data, { encoding: FileSystem.EncodingType.Base64 })
-      .then((fileUri) => {
-        Alert.alert('Save successful', `File saved to: ${fileUri}`);
-        console.log({ fileUri })
-      })
-      .catch(error => {
-        console.error(error);
-        Alert.alert('Error', 'Failed to save QR code as image.');
-      });
-  };
+  
 
-
-
-  const handleAddToCalendar = async () => {
+  const handleSendEmail = async ( passengerIndex: number) => {
     try {
-      // Request calendar permissions
-      const { status } = await Calendar.requestCalendarPermissionsAsync();
-      if (status !== 'granted') {
-        Alert.alert('Permissions required', 'Need calendar permissions to add events');
-        return;
-      }
-
-      // Get all available calendars
-      const calendars = await Calendar.getCalendarsAsync(Calendar.EntityTypes.EVENT);
-      let calendarId;
-
-      // Check if there is any writable calendar
-      const writableCalendar = calendars.find(cal => cal.allowsModifications);
-
-      if (writableCalendar) {
-        calendarId = writableCalendar.id;
-      } else {
-        // Alert if no writable calendar is available
-        Alert.alert('No Writable Calendar', 'No writable calendar available. Please check your calendar settings.');
-        return;
-      }
-
-      // Define event details
-      const eventDetails = {
-        title: 'Trip from ' + travelDetails.from + ' to ' + travelDetails.to,
-        startDate: new Date(travelDetails.outboundDate),
-        endDate: new Date(new Date(travelDetails.outboundDate).getTime() + 2 * 60 * 60 * 1000), // assuming 2 hours duration
-        timeZone: 'GMT+0',
-        location: travelDetails.to,
-      };
-
-      // Add event to the calendar
-      const eventId = await Calendar.createEventAsync(calendarId, eventDetails);
-      Alert.alert('Bravo', 'Calatoria ta a fost adaugata in calendar');
-    } catch (error) {
-      console.error(error);
-      Alert.alert('Error');
-    }
-  };
-
-
-
-
-
-  const generatePDF = async (qrDataArray: string[]) => {
-    try {
-      const response = await fetch('http://192.168.3.35:3000/generatePdf', {
+      const passengerEmail = travelDetails.passengers.email ; // Presupunând că obiectul passenger conține câmpul email
+      const response = await fetch('http://192.168.3.35:3000/send-email', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ qrDataArray }),
+        body: JSON.stringify({
+          email: passengerEmail, // Utilizați adresa de email a pasagerului
+          tickets: [
+            { type: 'Outbound', data: qrDataItem.outbound.data },
+            { type: 'Return', data: qrDataItem.return ? qrDataItem.return.data : null }
+          ]
+        }),
       });
-  
-      const arrayBuffer = await response.arrayBuffer();
-      const base64String = Buffer.from(arrayBuffer).toString('base64');
-  
-      // Salvați fișierul temporar în sistemul de fișiere local
-      const localUri = `${FileSystem.cacheDirectory}ticket.pdf`;
-      await FileSystem.writeAsStringAsync(localUri, base64String, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-  
-      // Verificați permisiunile pentru biblioteca media
-      const { status } = await MediaLibrary.requestPermissionsAsync();
-  
-      if (status !== 'granted') {
-        throw new Error('Permission to access media library denied');
-      }
-  
-      // Salvați fișierul în biblioteca media
-      const asset = await MediaLibrary.createAssetAsync(localUri);
-      const fileUri = asset.uri;
-  
-      return fileUri;
-    } catch (error: any) {
-      console.error('Error generating PDF:', error);
-      throw error;
-    }
-  };
-  
-  
-
-  
-  
-  const handleDownloadTicket = async () => {
-    try {
-      const fileUri = await generatePDF(qrData);
-      Alert.alert('Download Complete', `Ticket saved at ${fileUri}`);
+      const result = await response.text();
+      Alert.alert('Email Sent', result.message);
     } catch (error) {
-      Alert.alert('Download Error', `Failed to download the ticket:`);
+      console.error(error);
+      Alert.alert('Error', 'Failed to send email');
     }
   };
-
-
 
 
   return (
     <ScrollView style={styles.containerScroll}>
       <View style={styles.container}>
-
         <Text style={styles.headerText}>Booking Confirmed</Text>
         {qrData.map((qrString, index) => (
           <View key={index} style={styles.section}>
@@ -186,12 +93,7 @@ const FinalPage = ({ route }: any) => {
               size={200}
             />
             <Text style={styles.ticketText}>Prezentati acest QR la sofer.</Text>
-            <TouchableOpacity style={styles.closeButton} onPress={handleDownloadTicket}>
-              <Icon name="download" size={20} color="#fff" />
-              <Text style={styles.searchButtonText}>Descarcă PDF-ul biletului</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity style={styles.closeButton} onPress={handleAddToCalendar}>
+            <TouchableOpacity style={styles.closeButton} onPress={() => handleSendEmail(index)}>
               <Icon name="event" size={20} color="#fff" />
               <Text style={styles.searchButtonText}>Adauga in calendar</Text>
             </TouchableOpacity>
@@ -200,12 +102,11 @@ const FinalPage = ({ route }: any) => {
 
       </View>
     </ScrollView>
-
   );
 };
 
-
 export default FinalPage;
+
 
 const styles = StyleSheet.create({
   container: {
@@ -225,7 +126,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'flex-start',
-    marginBottom: 5, // Spațiu între butoane
+    marginBottom: 5,
     width: '70%',
     marginHorizontal: 5,
     shadowColor: '#000',
@@ -242,25 +143,12 @@ const styles = StyleSheet.create({
     fontSize: 16,
     fontWeight: 'bold',
     marginHorizontal: 10,
-
   },
   headerText: {
     fontSize: 22,
     fontWeight: 'bold',
     color: '#333',
     marginBottom: 20,
-  },
-  sectionHeader: {
-    fontSize: 18,
-    fontWeight: 'bold',
-    marginBottom: 10,
-    textAlign: 'center',
-    color: '#333', // sau altă culoare pe care o dorești
-  },
-  ticketText: {
-    fontSize: 16,
-    color: '#333',
-    marginVertical: 20,
   },
   section: {
     backgroundColor: '#CBF1F5',
@@ -278,4 +166,9 @@ const styles = StyleSheet.create({
     elevation: 3,
     alignItems: 'center',
   },
+  ticketText: {
+    fontSize: 16,
+    color: '#333',
+    marginVertical: 20,
+  }
 });
