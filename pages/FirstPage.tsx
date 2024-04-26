@@ -1,5 +1,5 @@
 import React, { useState, useRef } from 'react';
-import { StyleSheet, View, Text, TextInput, TouchableOpacity, ScrollView, Alert } from 'react-native';
+import { StyleSheet, View, Text, Modal, FlatList, TouchableOpacity, ScrollView, Alert, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import DatePicker from 'react-native-modern-datepicker';
 import { getToday, getFormatedDate } from "react-native-modern-datepicker";
@@ -9,32 +9,6 @@ const cities = [
   'Brasov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timisoara'
 ];
 
-const Dropdown = ({ items, selectedValue, onValueChange, excludedItems, placeholder }: any) => {
-  const [open, setOpen] = useState(false);
-
-  const toggleDropdown = () => {
-    setOpen(!open);
-  };
-
-  const filteredItems = items.filter((item: any) => !excludedItems.includes(item));
-  return (
-    <View style={styles.dropdownContainer}>
-      <TouchableOpacity onPress={toggleDropdown} style={styles.dropdownTrigger}>
-        <Text>{selectedValue || placeholder}</Text>
-        <MaterialIcons name={open ? "arrow-drop-up" : "arrow-drop-down"} size={24} style={styles.dropdownIcon} />
-      </TouchableOpacity>
-      {open && (
-        <View style={styles.dropdown}>
-          {filteredItems.map((item: any) => (
-            <TouchableOpacity key={item} onPress={() => { onValueChange(item); setOpen(false); }}>
-              <Text style={styles.dropdownItem}>{item}</Text>
-            </TouchableOpacity>
-          ))}
-        </View>
-      )}
-    </View>
-  );
-};
 
 const FirstPage = ({ navigation }: any) => {
   const [from, setFrom] = useState('');
@@ -42,19 +16,22 @@ const FirstPage = ({ navigation }: any) => {
   const [outboundDate, setOutboundDate] = useState<Date | undefined>(undefined);
   const [returnDate, setReturnDate] = useState<Date | undefined>(undefined);
   const [minDateForReturn, setMinDateForReturn] = useState<string | undefined>(undefined);
-
-  const today = getToday();
-  const handleSwap = () => {
-    const temp = from;
-    setFrom(to);
-    setTo(temp);
-  };
-
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
   const [date, setDate] = useState<string>();
   const [currentSelectingDate, setCurrentSelectingDate] = useState<'outbound' | 'return'>('outbound');
   const [numberOfPeople, setNumberOfPeople] = useState(1);
   const isValid = () => from !== '' && to !== '' && outboundDate;
+  const [settingCityFor, setSettingCityFor] = useState<'from' | 'to'>();
+
+  const today = getToday();
+  const handleSwap = () => {
+    // Schimbăm valorile dintre orașul de plecare și cel de destinație
+    const temp = from;
+    setFrom(to);
+    setTo(temp);
+  };
+
   // Tracks the minimum date for the return trip
 
 
@@ -73,6 +50,15 @@ const FirstPage = ({ navigation }: any) => {
       Alert.alert("Ai grija", "Te rog completează toate câmpurile pentru a continua.");
     }
   };
+
+  const formatDate = (date: any) => {
+    return new Intl.DateTimeFormat('ro-RO', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(date);
+  };
+
 
   const datePickerPosition = useRef(0);  // Start with 0 or any default suitable for your layout
 
@@ -118,41 +104,36 @@ const FirstPage = ({ navigation }: any) => {
 
 
 
+
   return (
     <ScrollView style={styles.container}>
       <View style={styles.form}>
-        <Text style={styles.headerText}>Rezerva-ti cursa impreuna cu noi!</Text>
+        <Text style={styles.headerText}>Calatorii comfortabile impreuna cu noi!</Text>
         <View style={styles.inputRow}>
-          <Dropdown
-            items={cities}
-            selectedValue={from}
-            placeholder="Pornire de la "
-            onValueChange={(value: any) => setFrom(value)}
-            excludedItems={[to]} // Exclude selected destination city
-          />
+          <TouchableOpacity onPress={() => { setIsModalVisible(true); setSettingCityFor('from'); }} style={styles.modalTrigger}>
+            <Text>{from || 'Pornire de la '}</Text>
+            <MaterialIcons name="arrow-drop-down" size={24} style={styles.dropdownIcon} />
+          </TouchableOpacity>
           <TouchableOpacity onPress={handleSwap}>
             <MaterialIcons name="swap-horiz" size={24} style={styles.swapIcon} />
           </TouchableOpacity>
-          <Dropdown
-            items={cities}
-            selectedValue={to}
-            placeholder="Destinatie la "
-            onValueChange={(value: React.SetStateAction<string>) => setTo(value)}
-            excludedItems={[from]} // Exclude selected departure city
-          />
+          <TouchableOpacity onPress={() => { setIsModalVisible(true); setSettingCityFor('to'); }} style={styles.modalTrigger}>
+            <Text>{to || 'Destinatie la '}</Text>
+            <MaterialIcons name="arrow-drop-down" size={24} style={styles.dropdownIcon} />
+          </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('outbound')}>
           <Text style={styles.dateText}>Tur</Text>
-          <Text style={styles.dateValue}>{outboundDate ? outboundDate.toDateString() : 'Selectează data'}</Text>
+          <Text style={styles.dateValue}>{outboundDate ? formatDate(outboundDate) : 'Selectează data'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.dateRow, { backgroundColor: outboundDate ? '#A6E3E9' : '#8CB9BD' }]}
+          style={[styles.dateRow, { backgroundColor: outboundDate ? '#A6E3E9' : '#808080' }]}
           onPress={() => handleDatePress('return')}
           disabled={!outboundDate}
         >
 
           <Text style={styles.dateText}>Retur</Text>
-          <Text style={styles.dateValue}>{returnDate ? returnDate.toDateString() : 'Selectează data'}</Text>
+          <Text style={styles.dateValue}>{returnDate ? formatDate(returnDate) : 'Selectează data'}</Text>
         </TouchableOpacity>
 
         {isDatePickerVisible && (
@@ -166,7 +147,7 @@ const FirstPage = ({ navigation }: any) => {
               onDateChange={onDateChange}
             />
             <TouchableOpacity onPress={() => setIsDatePickerVisible(false)} style={styles.closeButton}>
-              <Text style={styles.searchButtonText}>Close</Text>
+              <Text style={styles.searchButtonText}>Inchide</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -185,6 +166,48 @@ const FirstPage = ({ navigation }: any) => {
           <Text style={styles.searchButtonText}>Continua</Text>
         </TouchableOpacity>
       </View>
+
+      <Modal
+        animationType="slide"
+        transparent={true}
+        visible={isModalVisible}
+        onRequestClose={() => { setIsModalVisible(false); }}
+      >
+        <View style={styles.centeredView}>
+          <View style={styles.modalView}>
+            <TouchableOpacity onPress={() => setIsModalVisible(false)} style={styles.closeModalButton}>
+              <MaterialIcons name="close" size={24} />
+            </TouchableOpacity>
+            <View style={styles.modalItem}>
+              <MaterialIcons name="search" style={styles.cityIcon} size={24} />
+              <TextInput
+                placeholder="Search..."
+                placeholderTextColor="#999"
+                style={styles.searchInput}
+              />
+            </View>
+
+
+
+            <ScrollView>
+              {cities.map((city, index) => (
+                <TouchableOpacity key={index} onPress={() => {
+                  if (settingCityFor === 'from') {
+                    setFrom(city);
+                  } else if (settingCityFor === 'to') {
+                    setTo(city);
+                  }
+                  setIsModalVisible(false);
+                }} style={styles.modalItem}>
+                  <MaterialIcons name="location-city" size={24} style={styles.cityIcon} />
+                  <Text style={styles.modalText}>{city}</Text>
+                </TouchableOpacity>
+              ))}
+            </ScrollView>
+          </View>
+        </View>
+      </Modal>
+
     </ScrollView>
   );
 };
@@ -192,7 +215,7 @@ const FirstPage = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E3FDFD', // fundal alb
+    backgroundColor: 'white', // fundal alb
     paddingVertical: 20, // adaugă padding vertical
   },
   form: {
@@ -218,7 +241,7 @@ const styles = StyleSheet.create({
 
   datePickerContainer: {
     position: 'relative',
-    backgroundColor: '#A6E3E9',
+    backgroundColor: 'white',
     borderRadius: 22,
     marginVertical: 10,
 
@@ -248,12 +271,14 @@ const styles = StyleSheet.create({
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
+    justifyContent: 'space-between',
     color: "white",
     marginBottom: 20,
   },
   CalendarStyle: {
-    backgroundColor: '#A6E3E9',
+    backgroundColor: 'white',
     borderRadius: 22,
+    
 
   },
 
@@ -331,48 +356,16 @@ const styles = StyleSheet.create({
 
   },
 
-  dropdownContainer: {
-    flex: 1,
-    borderRadius: 10,
-    backgroundColor: "#A6E3E9",
-    color: "white",
-  },
-  dropdownTrigger: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    borderColor: '#ddd',
-    borderRadius: 10,
-    padding: 10,
-    backgroundColor: '#A6E3E9',
-  },
   dropdownIcon: {
     marginLeft: 'auto',
   },
-  dropdown: {
-    marginTop: 5,
-    borderWidth: 0,
-    borderColor: '#ddd',
-    borderRadius: 10,
-    
-    backgroundColor: '#A6E3E9',
-  },
-  dropdownItem: {
-    color: "black",
-    padding: 10,
-  }
-  ,
-
 
   headerText: {
     textAlign: 'center', // Alinează textul în centru pe orizontală
     fontSize: 24, // sau orice dimensiune preferi
     fontWeight: 'bold',
     marginBottom: 10, // adaugă un spațiu vertical sus și jos pentru estetică
-    // Dacă ai nevoie să centrezi textul și pe verticală într-un View cu 'flex: 1'
-    // și nu există alte elemente pe acel ax, ai putea adăuga:
-    // justifyContent: 'center' pe stilul 'container'
   },
-
 
   searchButtonText: {
     color: '#fff',
@@ -381,27 +374,73 @@ const styles = StyleSheet.create({
   },
   centeredView: {
     flex: 1,
-    justifyContent: 'center',
+    justifyContent: 'flex-end',
     alignItems: "center",
-    marginTop: 22,
+  },
+  modalTrigger: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    borderColor: '#ddd',
+    borderRadius: 10,
+    width: '40%',
+    padding: 10,
+    backgroundColor: '#A6E3E9',
+  },
+  closeMoButton: {
+    position: 'absolute',
+    top: 10,
+    right: 10,
+    zIndex: 1,
   },
   modalView: {
-    margin: 20,
-    backgroundColor: 'white',
+    width: '100%', // Full width to match the screen
+    height: '70%',
+    backgroundColor: 'white', // Keeping it light as per your original design
+    borderTopRightRadius: 20, // Only top corners are rounded
+    borderTopLeftRadius: 20,
     borderRadius: 20,
-    width: '90%',
-    padding: 35,
-    alignItems: 'center',
+    padding: 20,
+    justifyContent: 'flex-start', // Align items to the top
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
+    shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
     shadowRadius: 4,
     elevation: 5,
-  }
+  },
+  modalItem: {
+    fontSize: 20, // Increased font size
+    paddingVertical: 20, // Increased padding for a larger touch area
+    borderBottomWidth: 1,
+    borderBottomColor: '#dddr', // A light color for the separator
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  cityIcon: {
+    marginRight: 15, // Added some space between the icon and the text
+    color: '#000', // Icon color as black
+  },
+  closeModalButton: {
+    alignSelf: 'flex-end', // Align close button to the right
+  },
+  modalText: {
+    fontSize: 18, // Increased font size for modal texts
+    color: '#000', // Text color as black
+  },
+  searchInput: {
+    fontSize: 18, // Increased font size
+    paddingVertical: 0, // Increased padding for a larger touch area
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  searchIcon: {
+    position: 'absolute',
+    left: 10,
+    top: 10,
+    color: '#fff', // Icon color to be visible on dark bg
+  },
 });
 
-export default FirstPage;
 
+export default FirstPage;

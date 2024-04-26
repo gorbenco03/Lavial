@@ -9,7 +9,7 @@ const CheckoutPage = ({ navigation, route }: any) => {
   const fetchPaymentSheetParams = async () => {
     const totalAmount = calculateTotalPrice() * 100;
     const publishableKey = 'pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6'; 
-    const response = await fetch(`http://172.20.10.10:3000/payment-sheet`, {
+    const response = await fetch(`http://172.20.10.3:3000/payment-sheet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -140,6 +140,15 @@ const CheckoutPage = ({ navigation, route }: any) => {
     });
   };
 
+  const formatDate = (date: any) => {
+    return new Intl.DateTimeFormat('ro-RO', {
+      day: '2-digit',
+      month: '2-digit',
+      year: 'numeric'
+    }).format(new Date(date));
+  };
+  
+  
 
   return (
     <StripeProvider
@@ -155,11 +164,11 @@ const CheckoutPage = ({ navigation, route }: any) => {
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Detalii cursă</Text>
           <View style={styles.detailsRow}>
-            <FontAwesome name="calendar" size={18} color="#333" />
-            <Text style={styles.detailsTime}>{outboundDate}</Text>
-            <FontAwesome name="long-arrow-right" size={16} color="#333" />
-            <Text style={styles.detailsTime}>{returnDate}</Text>
-            <FontAwesome name="calendar" size={18} color="#333" />
+          <FontAwesome name="calendar" size={18} color="#333" />
+  <Text style={styles.detailsTime}>{formatDate(outboundDate)}</Text>
+  <FontAwesome name="long-arrow-right" size={16} color="#333" />
+  <Text style={styles.detailsTime}>{returnDate ? formatDate(returnDate) : '---'}</Text>
+  <FontAwesome name="calendar" size={18} color="#333" />
           </View>
           <Text style={styles.detailsRoute}>
             <FontAwesome name="location-arrow" size={16} color="#333" /> {from} <FontAwesome name="long-arrow-right" size={16} color="#333" /> {to}

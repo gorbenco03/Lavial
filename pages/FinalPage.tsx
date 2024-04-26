@@ -4,7 +4,7 @@ import QRCode from 'react-native-qrcode-svg';
 import RNHTMLtoPDF from 'react-native-html-to-pdf';
 import Icon from 'react-native-vector-icons/MaterialIcons';
 
-const FinalPage = ({ route }: any) => {
+const FinalPage = ({navigation,  route }: any) => {
   const { travelDetails } = route.params;
   const [qrData, setQrData] = useState<Array<string>>([]);
   useEffect(() => {
@@ -13,6 +13,7 @@ const FinalPage = ({ route }: any) => {
 
       travelDetails.passengers.forEach((passenger: any) => {
         console.log('Email-ul pasagerului:', passenger.email);
+
         const qrStringOutbound = JSON.stringify({
           name: passenger.name,
           surname: passenger.surname,
@@ -24,7 +25,7 @@ const FinalPage = ({ route }: any) => {
           from: travelDetails.from,
           to: travelDetails.to,
           date: travelDetails.outboundDate,
-          tripType: 'Outbound'
+          tripType: 'Plecare'
         });
 
         qrDataArray.push(qrStringOutbound);
@@ -42,7 +43,7 @@ const FinalPage = ({ route }: any) => {
             from: travelDetails.to, // inversăm locurile pentru biletul de întoarcere
             to: travelDetails.from, // inversăm locurile pentru biletul de întoarcere
             date: travelDetails.returnDate,
-            tripType: 'Return'
+            tripType: 'Retur'
           });
 
           qrDataArray.push(qrStringReturn);
@@ -55,7 +56,7 @@ const FinalPage = ({ route }: any) => {
 
   const sendDataToBackend = async (qrDataArray: any, email:string)=> {
     try {
-      const response = await fetch('http://172.20.10.10:3000/send-qr', {
+      const response = await fetch('http://172.20.10.3:3000/send-qr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -78,10 +79,12 @@ const FinalPage = ({ route }: any) => {
       }
     }
   };
-  
-
-
-  
+  const goToHome = () => {
+    navigation.reset({
+      index: 0,
+      routes: [{ name: 'Acasa' }],
+    });
+  };
 
   useEffect(() => {
     // Assuming qrData is already populated with QR code data
@@ -95,22 +98,15 @@ const FinalPage = ({ route }: any) => {
   return (
     <ScrollView style={styles.containerScroll}>
       <View style={styles.container}>
-        <Text style={styles.headerText}>Booking Confdirmed</Text>
-        {qrData.map((qrString, index) => (
-          <View key={index} style={styles.section}>
-            {/* <Text style={styles.sectionHeader}>Bilet pentru {travelDetails.passengers[index].name} {travelDetails.passengers[index].surname}</Text> */}
-            <QRCode
-              value={qrString}
-              size={200}
-            />
+      <Text style={styles.headerText}>Success!</Text>
+      
+          <View  style={styles.section}>
             <Text style={styles.ticketText}>Prezentati acest QR la sofer.</Text>
             <TouchableOpacity style={styles.closeButton}>
               <Icon name="event" size={20} color="#fff" />
-              <Text style={styles.searchButtonText}>Adauga in calendar</Text>
+              <Text style={styles.searchButtonText} onPress={goToHome}>Mergi la pagina principala </Text>
             </TouchableOpacity>
           </View>
-        ))}
-
       </View>
     </ScrollView>
   );
