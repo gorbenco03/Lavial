@@ -23,18 +23,19 @@ const FirstPage = ({ navigation }: any) => {
   const [numberOfPeople, setNumberOfPeople] = useState(1);
   const isValid = () => from !== '' && to !== '' && outboundDate;
   const [settingCityFor, setSettingCityFor] = useState<'from' | 'to'>();
-
+  const datePickerPosition = useRef(0);  // Start with 0 or any default suitable for your layout
   const today = getToday();
+  const [searchQuery, setSearchQuery] = useState('');
+  const [filteredCities, setFilteredCities] = useState<string[]>(cities);
+
+
+
   const handleSwap = () => {
     // Schimbăm valorile dintre orașul de plecare și cel de destinație
     const temp = from;
     setFrom(to);
     setTo(temp);
   };
-
-  // Tracks the minimum date for the return trip
-
-
   const goToPersonalDetails = () => {
     // Verificăm dacă informațiile sunt completate înainte de a naviga
     if (isValid()) {
@@ -50,7 +51,6 @@ const FirstPage = ({ navigation }: any) => {
       Alert.alert("Ai grija", "Te rog completează toate câmpurile pentru a continua.");
     }
   };
-
   const formatDate = (date: any) => {
     return new Intl.DateTimeFormat('ro-RO', {
       day: '2-digit',
@@ -58,10 +58,6 @@ const FirstPage = ({ navigation }: any) => {
       year: 'numeric'
     }).format(date);
   };
-
-
-  const datePickerPosition = useRef(0);  // Start with 0 or any default suitable for your layout
-
   const handleDatePress = (dateType: 'outbound' | 'return') => {
     if (dateType === 'return' && !outboundDate) {
       Alert.alert("Atenție", "Selectați mai întâi data de plecare.");
@@ -77,13 +73,23 @@ const FirstPage = ({ navigation }: any) => {
       setDate(returnDate ? returnDate.toISOString().split('T')[0] : minDateForReturn);
     }
   };
-
-
-
-
+  const setCity = (city: any) => {
+    if (settingCityFor === 'from') {
+      if (city === to) {
+        Alert.alert("Eroare", "Nu poți selecta același oraș pentru plecare și destinație.");
+      } else {
+        setFrom(city);
+      }
+    } else if (settingCityFor === 'to') {
+      if (city === from) {
+        Alert.alert("Eroare", "Nu poți selecta același oraș pentru plecare și destinație.");
+      } else {
+        setTo(city);
+      }
+    }
+  };
   const onDateChange = (selectedDate: string) => {
     const newDate = new Date(selectedDate.replace(/\//g, '-'));
-
     if (currentSelectingDate === 'outbound') {
       setOutboundDate(newDate);
       const nextDay = new Date(newDate);
@@ -97,8 +103,13 @@ const FirstPage = ({ navigation }: any) => {
     }
     setIsDatePickerVisible(false);
   };
-
-
+  const updateSearch = (query: string) => {
+    setSearchQuery(query);
+    const filtered = cities.filter(city =>
+      city.toLowerCase().includes(query.toLowerCase())
+    );
+    setFilteredCities(filtered);
+  };
 
 
 
@@ -133,7 +144,7 @@ const FirstPage = ({ navigation }: any) => {
         >
 
           <Text style={styles.dateText}>Retur</Text>
-          <Text style={styles.dateValue}>{returnDate ? formatDate(returnDate) : 'Selectează data'}</Text>
+          <Text style={styles.dateValue}>{returnDate ? formatDate(returnDate) : ''}</Text>
         </TouchableOpacity>
 
         {isDatePickerVisible && (
@@ -181,28 +192,23 @@ const FirstPage = ({ navigation }: any) => {
             <View style={styles.modalItemSearch}>
               <MaterialIcons name="search" style={styles.cityIcon} size={24} />
               <TextInput
-                placeholder="Cauta"
+                placeholder="Cauta oras"
                 placeholderTextColor="#999"
                 style={styles.searchInput}
+                value={searchQuery}
+                onChangeText={updateSearch}
               />
             </View>
-
-
-
             <ScrollView>
-              {cities.map((city, index) => (
-                <TouchableOpacity key={index} onPress={() => {
-                  if (settingCityFor === 'from') {
-                    setFrom(city);
-                  } else if (settingCityFor === 'to') {
-                    setTo(city);
-                  }
-                  setIsModalVisible(false);
-                }} style={styles.modalItem}>
-                  <MaterialIcons name="location-city" size={24} style={styles.cityIcon} />
-                  <Text style={styles.modalText}>{city}</Text>
-                </TouchableOpacity>
-              ))}
+            {filteredCities.map((city, index) => (
+                  <TouchableOpacity key={index} onPress={() => {
+                    setCity(city);
+                    setIsModalVisible(false);
+                  }} style={styles.modalItem}>
+                    <MaterialIcons name="location-city" size={24} style={styles.cityIcon} />
+                    <Text style={styles.modalText}>{city}</Text>
+                  </TouchableOpacity>
+                ))}
             </ScrollView>
           </View>
         </View>
@@ -278,7 +284,7 @@ const styles = StyleSheet.create({
   CalendarStyle: {
     backgroundColor: 'white',
     borderRadius: 22,
-    
+
 
   },
 
@@ -409,16 +415,16 @@ const styles = StyleSheet.create({
   },
   modalItem: {
     fontSize: 20, // Increased font size
-    paddingVertical: 20, // Increased padding for a larger touch area
+    paddingVertical: 15, // Increased padding for a larger touch area
     borderBottomWidth: 1,
-    borderBottomColor: '#dddr', // A light color for the separator
+    borderBottomColor: '#ddd', // A light color for the separator
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
   },
   modalItemSearch: {
     fontSize: 20, // Increased font size
-    paddingBottom: 5  , // Increased padding for a larger touch area
+    paddingBottom: 5, // Increased padding for a larger touch area
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
