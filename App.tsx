@@ -67,8 +67,11 @@ const App = () => {
                 source={require('./assets/logo-lavial.png')} // Înlocuiește cu calea corectă către imaginea logo-ului tău
                 style={{ width: 168, height: 56, marginTop:-10}} // Ajustează dimensiunile după necesități
               />
+
             ),
             headerTitleAlign: 'center', // Opțional: centrează logo-ul dacă este necesar
+            gestureEnabled: false, // Aceasta opțiune dezactivează gesturile de navigare
+            headerBackVisible :  false,  // Aceasta opțiune ascunde butonul de înapoi
           }}
         />
       </Stack.Navigator>

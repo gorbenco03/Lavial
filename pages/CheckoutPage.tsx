@@ -9,7 +9,7 @@ const CheckoutPage = ({ navigation, route }: any) => {
   const fetchPaymentSheetParams = async () => {
     const totalAmount = calculateTotalPrice() * 100;
     const publishableKey = 'pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6'; 
-    const response = await fetch(`http://172.20.10.3:3000/payment-sheet`, {
+    const response = await fetch(`http://192.168.1.6:3000/payment-sheet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

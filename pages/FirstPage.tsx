@@ -127,7 +127,7 @@ const FirstPage = ({ navigation }: any) => {
           <Text style={styles.dateValue}>{outboundDate ? formatDate(outboundDate) : 'Selectează data'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.dateRow, { backgroundColor: outboundDate ? '#A6E3E9' : '#808080' }]}
+          style={[styles.dateRow, { backgroundColor: outboundDate ? '#A6E3E9' : '#A6E3E9' }]}
           onPress={() => handleDatePress('return')}
           disabled={!outboundDate}
         >
@@ -178,10 +178,10 @@ const FirstPage = ({ navigation }: any) => {
             <TouchableOpacity onPress={() => setIsModalVisible(false)} style={styles.closeModalButton}>
               <MaterialIcons name="close" size={24} />
             </TouchableOpacity>
-            <View style={styles.modalItem}>
+            <View style={styles.modalItemSearch}>
               <MaterialIcons name="search" style={styles.cityIcon} size={24} />
               <TextInput
-                placeholder="Search..."
+                placeholder="Cauta"
                 placeholderTextColor="#999"
                 style={styles.searchInput}
               />
@@ -412,6 +412,13 @@ const styles = StyleSheet.create({
     paddingVertical: 20, // Increased padding for a larger touch area
     borderBottomWidth: 1,
     borderBottomColor: '#dddr', // A light color for the separator
+    flexDirection: 'row',
+    alignItems: 'center',
+    width: '100%',
+  },
+  modalItemSearch: {
+    fontSize: 20, // Increased font size
+    paddingBottom: 5  , // Increased padding for a larger touch area
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',

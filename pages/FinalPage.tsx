@@ -56,7 +56,7 @@ const FinalPage = ({navigation,  route }: any) => {
 
   const sendDataToBackend = async (qrDataArray: any, email:string)=> {
     try {
-      const response = await fetch('http://172.20.10.3:3000/send-qr', {
+      const response = await fetch('http://192.168.1.6:3000/send-qr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -79,6 +79,7 @@ const FinalPage = ({navigation,  route }: any) => {
       }
     }
   };
+  
   const goToHome = () => {
     navigation.reset({
       index: 0,
