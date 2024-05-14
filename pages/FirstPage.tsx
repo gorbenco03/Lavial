@@ -1,13 +1,14 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import { StyleSheet, View, Text, Modal, FlatList, TouchableOpacity, ScrollView, Alert, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import DatePicker from 'react-native-modern-datepicker';
 import { getToday, getFormatedDate } from "react-native-modern-datepicker";
 
 const cities = [
-  'Chisinau', 'Husi', 'Tecuci', 'Adjud', 'Onesti',
-  'Brasov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timisoara'
-];
+  'Chișinău', 'Huși', 'Tecuci', 'Adjud', 'Onești',
+  'Brașov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
+]; 
+
 
 
 const FirstPage = ({ navigation }: any) => {
@@ -73,12 +74,12 @@ const FirstPage = ({ navigation }: any) => {
       setDate(returnDate ? returnDate.toISOString().split('T')[0] : minDateForReturn);
     }
   };
-  const setCity = (city: any) => {
+  const setCity = (city: string) => {
     if (settingCityFor === 'from') {
-      if (city === to) {
-        Alert.alert("Eroare", "Nu poți selecta același oraș pentru plecare și destinație.");
-      } else {
-        setFrom(city);
+      setFrom(city);
+      // Reset the destination city if the same city is selected or not appropriate
+      if (city === to || (city !== 'Chișinău' && to !== 'Chișinău')) {
+        setTo('');
       }
     } else if (settingCityFor === 'to') {
       if (city === from) {
@@ -88,6 +89,7 @@ const FirstPage = ({ navigation }: any) => {
       }
     }
   };
+  
   const onDateChange = (selectedDate: string) => {
     const newDate = new Date(selectedDate.replace(/\//g, '-'));
     if (currentSelectingDate === 'outbound') {
@@ -104,13 +106,33 @@ const FirstPage = ({ navigation }: any) => {
     setIsDatePickerVisible(false);
   };
   const updateSearch = (query: string) => {
-    setSearchQuery(query);
-    const filtered = cities.filter(city =>
-      city.toLowerCase().includes(query.toLowerCase())
-    );
+    const lowercaseQuery = query.toLowerCase();
+    setSearchQuery(lowercaseQuery);
+    if (!query) {
+      updateFilteredCities();
+      return;
+    }
+    const filtered = filteredCities.filter(city => city.toLowerCase().includes(lowercaseQuery));
     setFilteredCities(filtered);
   };
-
+  
+  const updateFilteredCities = () => {
+    if (from === 'Chișinău') {
+      // Exclude 'Chișinău' from destinations
+      setFilteredCities(cities.filter(city => city !== 'Chișinău'));
+    } else if (from) {
+      // Only 'Chișinău' is available as destination
+      setFilteredCities(['Chișinău']);
+    } else {
+      // Reset to all cities if no from city is selected
+      setFilteredCities(cities);
+    }
+  };
+  
+  useEffect(() => {
+    updateFilteredCities();
+  }, [from]); // Re-run when 'from' changes
+  
 
 
 

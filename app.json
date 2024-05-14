@@ -4,10 +4,11 @@
     "slug": "Lavial",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/L.png",
     "userInterfaceStyle": "light",
+    "scheme" : "lavialapp", 
     "splash": {
-      "image": "./assets/splash.png",
+      "image": "./assets/L_w.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -25,7 +26,7 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/L.png",
         "backgroundColor": "#ffffff", 
         "permissions": [
           "WRITE_EXTERNAL_STORAGE",

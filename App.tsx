@@ -1,3 +1,4 @@
+import 'react-native-reanimated';
 import React from 'react';
 import { Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
@@ -7,6 +8,7 @@ import SecondPage from './pages/SecondPage'; // O altă pagină
 import CheckoutPage from './pages/CheckoutPage';
 import FinalPage from './pages/FinalPage';
 import { StripeProvider } from '@stripe/stripe-react-native';
+
 
 const Stack = createNativeStackNavigator();
 

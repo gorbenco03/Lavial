@@ -1,5 +1,5 @@
   import React, { useState } from 'react';
-  import { View, TextInput, Text, StyleSheet, TouchableOpacity, Switch, ScrollView, Alert } from 'react-native';
+  import { View, TextInput, Text, StyleSheet,FlatList , TouchableOpacity, Switch, ScrollView, Alert } from 'react-native';
 
   const SecondPage = ({ navigation, route }: any) => {
     const { from, to, outboundDate, returnDate, numberOfPeople } = route.params;
@@ -38,57 +38,67 @@
     };
     
     
-
-    const goToCheckout = () => {
-      for (let i = 0; i < passengers.length; i++) {
-        const p = passengers[i];
-        if (!p.name || !p.surname || !p.email || !p.phone || !p.passportSerial || (p.isStudent && !p.studentIdSerial)) {
-          Alert.alert('Eroare', 'Te rog completează toate câmpurile înainte de a continua.');
-          return;
-        }
+    const validatePassenger = (passenger: Passenger) => {
+      const { name, surname, email, phone, passportSerial, isStudent, studentIdSerial } = passenger;
+      if (!name || !surname || !email || !phone || !passportSerial || (isStudent && !studentIdSerial)) {
+        return false;
       }
-
-      navigation.navigate('Checkout', {
-        from,
-        to,
-        outboundDate,
-        returnDate,
-        numberOfPeople,
-        passengers,
-      });
+      return true;
     };
+  const goToCheckout = () => {
+  if (passengers.some(passenger => !validatePassenger(passenger))) {
+    Alert.alert('Eroare', 'Te rog completează toate câmpurile pentru toți pasagerii înainte de a continua.');
+    return;
+  }
+  navigation.navigate('Checkout', {
+    from,
+    to,
+    outboundDate,
+    returnDate,
+    numberOfPeople,
+    passengers,
+  });
+};
+    
+
+  
     return (
-      <ScrollView style={styles.container}>
+      <FlatList
+      data={passengers}
+      keyExtractor={(item, index) => index.toString()}
+      style={styles.container}
+      renderItem={({ item, index }) => (
+      <ScrollView >
         {passengers.map((passenger, index) => (
           <View key={index} style={styles.section}>
             <Text style={styles.sectionTitle}>Detalii despre pasager {index + 1}</Text>
             <TextInput
-              style={styles.input}
+               style={[inputStyles, styles.input]}
               placeholder="Nume"
               onChangeText={(text) => setPassengerField(index, 'name', text)}
               value={passenger.name}
             />
             <TextInput
-              style={styles.input}
+             style={[inputStyles, styles.input]}
               placeholder="Prenume"
               onChangeText={(text) => setPassengerField(index, 'surname', text)}
               value={passenger.surname}
             />
             <TextInput
-              style={styles.input}
+               style={[inputStyles, styles.input]}
               placeholder="Email"
               onChangeText={(text) => setPassengerField(index, 'email', text)}
               value={passenger.email}
             />
             <TextInput
-              style={styles.input}
+              style={[inputStyles, styles.input]}
               placeholder="Numarul de telefon"
               onChangeText={(text) => setPassengerField(index, 'phone', text)}
               keyboardType="phone-pad"
               value={passenger.phone}
             />
             <TextInput
-              style={styles.input}
+               style={[inputStyles, styles.input]}
               placeholder="Seria Pasaport"
               onChangeText={(text) => setPassengerField(index, 'passportSerial', text)}
               value={passenger.passportSerial}
@@ -114,8 +124,9 @@
           <Text style={styles.payButtonText}>Continua</Text>
         </TouchableOpacity>
       </ScrollView>
-    );
-  };
+    )}
+    />
+  )};
 
   const styles = StyleSheet.create({
     container: {
@@ -189,5 +200,22 @@
     },
   });
 
+  const inputStyles = {
+    borderColor: '#ccc',
+    backgroundColor: '#A6E3E9',
+    padding: 10,
+    borderRadius: 10,
+    marginBottom: 20,
+    fontSize: 16,
+    color: 'black',
+  };
+  
+  const detailsRowStyles = {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginBottom: 10,
+    borderRadius: 10,
+  };
 
+  
   export default SecondPage;
