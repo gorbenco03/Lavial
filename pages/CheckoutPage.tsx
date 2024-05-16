@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import  {React,  useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
@@ -38,7 +38,7 @@ const CheckoutPage = ({ navigation, route }: { navigation: any; route: { params:
   const fetchPaymentSheetParams = async () => {
     const totalAmount = calculateTotalPrice() * 100;
     const publishableKey = 'pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6';
-    const response = await fetch(`http://192.168.3.35:3000/payment-sheet`, {
+    const response = await fetch(`http://159.89.107.143:3000/payment-sheet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',

@@ -1,10 +1,12 @@
 {
-  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "strict": true, 
-    "typeRoots": ["./node_modules/@types", "./types"],
-    "types": ["react-native-html-to-pdf", "node"]
-  }, 
- 
-  
+    "target": "es5",
+    "module": "commonjs",
+    "strict": true,
+    "jsx": "react",
+    "esModuleInterop": true,
+    // other options...
+  },
+  "include": ["./*.ts", "./*.tsx", "./pages/**/*.ts", "./pages/**/*.tsx"],
+  "exclude": ["node_modules"]
 }

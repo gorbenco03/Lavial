@@ -1,17 +1,17 @@
-import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Alert, TouchableOpacity, ScrollView } from 'react-native';
-import Icon from 'react-native-vector-icons/MaterialIcons';
-
-const FinalPage = ({ navigation, route }: any) => {
+import { useState, useEffect } from 'react';
+import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
+import LottieView from 'lottie-react-native';
+import React from 'react'; 
+const FinalPage = ({ navigation, route } : any) => {
   const { travelDetails } = route.params;
-  const [qrData, setQrData] = useState<Array<string>>([]);
+  const [qrData, setQrData] = useState([]);
 
   useEffect(() => {
     if (travelDetails) {
-      const qrDataArray: Array<string> = [];
+      const qrDataArray : any = [];
       const { outbound, return: returnDetails } = travelDetails;
 
-      travelDetails.passengers.forEach((passenger: any) => {
+      travelDetails.passengers.forEach((passenger : any) => {
         const qrStringOutbound = JSON.stringify({
           name: passenger.name,
           surname: passenger.surname,
@@ -59,11 +59,11 @@ const FinalPage = ({ navigation, route }: any) => {
     }
   }, [travelDetails]);
 
-  const sendDataToBackend = async (qrDataArray: any, email: string) => {
+  const sendDataToBackend = async (qrDataArray : any , email : any ) => {
     try {
       const requestData = JSON.stringify({ qrData: qrDataArray, email });
       console.log('Trimite către server:', requestData);
-      const response = await fetch('http://192.168.3.35:3000/send-qr', {
+      const response = await fetch('http://206.189.249.99:3000/send-qr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -97,18 +97,23 @@ const FinalPage = ({ navigation, route }: any) => {
   }, [qrData]);
 
   return (
-    <ScrollView style={styles.containerScroll}>
+    <ScrollView style={styles.containerScroll} contentContainerStyle={styles.contentContainer}>
       <View style={styles.container}>
         <Text style={styles.headerText}>Success!</Text>
-
-        <View style={styles.section}>
-          <Text style={styles.ticketText}>Prezentati acest QR la sofer.</Text>
-          <TouchableOpacity style={styles.closeButton} onPress={goToHome}>
-            <Icon name="event" size={20} color="#fff" />
-            <Text style={styles.searchButtonText}>Mergi la pagina principala</Text>
-          </TouchableOpacity>
+        <View style={styles.animationContainer}>
+          <LottieView 
+            source={require('../assets/animation.json')} 
+            autoPlay 
+            loop={false} 
+            style={styles.lottie}
+            speed={0.5} // Adjust the speed here
+          />
         </View>
+        <Text style={styles.ticketText}>Biletele vor fi trimise pe mail.</Text>
       </View>
+      <TouchableOpacity style={styles.payButton} onPress={goToHome}>
+        <Text style={styles.searchButtonText}>Mergi la pagina principala</Text>
+      </TouchableOpacity>
     </ScrollView>
   );
 };
@@ -119,6 +124,10 @@ const styles = StyleSheet.create({
   containerScroll: {
     flex: 1,
     backgroundColor: '#fff',
+  },
+  contentContainer: {
+    flexGrow: 1,
+    justifyContent: 'space-between',
   },
   container: {
     flex: 1,
@@ -131,26 +140,39 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
     marginBottom: 20,
   },
-  section: {
-    width: '100%',
+  animationContainer: {
+    justifyContent: 'center',
+    alignItems: 'center',
     marginBottom: 20,
+  },
+  lottie: {
+    width: 200,
+    height: 200,
   },
   ticketText: {
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
   },
-  closeButton: {
-    flexDirection: 'row',
-    alignItems: 'center',
+  payButton: {
     justifyContent: 'center',
-    backgroundColor: '#007bff',
-    padding: 10,
-    borderRadius: 5,
+    alignItems: 'center',
+    backgroundColor: '#393E46',
+    borderRadius: 10,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 15,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.2,
+    shadowRadius: 2,
+    elevation: 3,
   },
   searchButtonText: {
     fontSize: 16,
     color: '#fff',
-    marginLeft: 5,
   },
 });
