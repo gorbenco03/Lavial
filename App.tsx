@@ -3,81 +3,123 @@ import React from 'react';
 import { Image } from 'react-native';
 import { NavigationContainer } from '@react-navigation/native';
 import { createNativeStackNavigator } from '@react-navigation/native-stack';
-import FirstPage from './pages/FirstPage'; // Componenta ta modificată
-import SecondPage from './pages/SecondPage'; // O altă pagină
+import FirstPage from './pages/FirstPage'; 
+import SecondPage from './pages/SecondPage'; 
 import CheckoutPage from './pages/CheckoutPage';
 import FinalPage from './pages/FinalPage';
 import { StripeProvider } from '@stripe/stripe-react-native';
 
+export interface Passenger {
+  name: string;
+  surname: string;
+  phone: string;
+  email: string;
+  passportSerial: string;
+  isStudent: boolean;
+  studentIdSerial: string;
+}
 
-const Stack = createNativeStackNavigator();
+export interface TravelDetails {
+  from: string;
+  fromStation: string;
+  to: string;
+  toStation: string;
+  departureTime: string;
+  arrivalTime: string;
+}
+
+export interface RouteParams {
+  from: string;
+  to: string;
+  outboundDate: string;
+  returnDate?: string;
+  passengers: Passenger[];
+}
+
+export type RootStackParamList = {
+  Splash: undefined;
+  Acasa: undefined;
+  Detalii: undefined;
+  Checkout: RouteParams;
+  Final: { travelDetails: TravelDetailsType };
+};
+
+export interface TravelDetailsType {
+  from: string;
+  to: string;
+  outboundDate: string;
+  returnDate?: string;
+  passengers: Passenger[];
+  outbound: TravelDetails | undefined;
+  return: TravelDetails | undefined;
+}
+
+const Stack = createNativeStackNavigator<RootStackParamList>();
 
 const App = () => {
   return (
     <StripeProvider
       publishableKey="pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6"
       urlScheme="your-url-scheme"  // required for 3D Secure and bank redirects
-      // merchantIdentifier="merchant.com.{{YOUR_APP_NAME}}" // required for Apple Pay
     >
-    <NavigationContainer>
-      <Stack.Navigator initialRouteName="Acasa">
-        <Stack.Screen 
-          name="Acasa" 
-          component={FirstPage}
-          options={{
-            headerTitle: () => (
-              <Image 
-                source={require('./assets/logo-lavial.png')} // Înlocuiește cu calea corectă către imaginea logo-ului tău
-                style={{ width: 168, height: 56, marginTop:-10}} // Ajustează dimensiunile după necesități
-              />
-            ),
-            headerTitleAlign: 'center', // Opțional: centrează logo-ul dacă este necesar
-          }}
-        />
-        <Stack.Screen 
-          name="Detalii" 
-          component={SecondPage} 
-          options={{
-            headerTitle: () => (
-              <Image 
-                source={require('./assets/logo-lavial.png')} // Înlocuiește cu calea corectă către imaginea logo-ului tău
-                style={{ width: 168, height: 56, marginTop:-10}} // Ajustează dimensiunile după necesități
-              />
-            ),
-            headerTitleAlign: 'center', // Opțional: centrează logo-ul dacă este necesar
-          }}
-        />
-        <Stack.Screen 
-          name="Checkout" 
-          component={CheckoutPage} 
-          options={{
-            headerTitle: () => (
-              <Image 
-                source={require('./assets/logo-lavial.png')} // Înlocuiește cu calea corectă către imaginea logo-ului tău
-                style={{ width: 168, height: 56, marginTop:-10}} // Ajustează dimensiunile după necesități
-              />
-            ),
-            headerTitleAlign: 'center', // Opțional: centrează logo-ul dacă este necesar
-          }}
-        />
-        <Stack.Screen 
-          name="Final" 
-          component={FinalPage} 
-          options={{
-            headerTitle: () => (
-              <Image 
-                source={require('./assets/logo-lavial.png')} // Înlocuiește cu calea corectă către imaginea logo-ului tău
-                style={{ width: 168, height: 56, marginTop:-10}} // Ajustează dimensiunile după necesități
-              />
-
-            ),
-            headerTitleAlign: 'center', // Opțional: centrează logo-ul dacă este necesar
-            gestureEnabled: false, // Aceasta opțiune dezactivează gesturile de navigare
-            headerBackVisible :  false,  // Aceasta opțiune ascunde butonul de înapoi
-          }}
-        />
-      </Stack.Navigator>
-    </NavigationContainer>
+      <NavigationContainer>
+        <Stack.Navigator initialRouteName="Acasa">
+          <Stack.Screen 
+            name="Acasa" 
+            component={FirstPage}
+            options={{
+              headerTitle: () => (
+                <Image 
+                  source={require('./assets/logo-lavial.png')}
+                  style={{ width: 168, height: 56, marginTop:-10}}
+                />
+              ),
+              headerTitleAlign: 'center',
+            }}
+          />
+          <Stack.Screen 
+            name="Detalii" 
+            component={SecondPage} 
+            options={{
+              headerTitle: () => (
+                <Image 
+                  source={require('./assets/logo-lavial.png')}
+                  style={{ width: 168, height: 56, marginTop:-10}}
+                />
+              ),
+              headerTitleAlign: 'center',
+            }}
+          />
+          <Stack.Screen 
+            name="Checkout" 
+            component={CheckoutPage} 
+            options={{
+              headerTitle: () => (
+                <Image 
+                  source={require('./assets/logo-lavial.png')}
+                  style={{ width: 168, height: 56, marginTop:-10}}
+                />
+              ),
+              headerTitleAlign: 'center',
+            }}
+          />
+          <Stack.Screen 
+            name="Final" 
+            component={FinalPage} 
+            options={{
+              headerTitle: () => (
+                <Image 
+                  source={require('./assets/logo-lavial.png')}
+                  style={{ width: 168, height: 56, marginTop:-10}}
+                />
+              ),
+              headerTitleAlign: 'center',
+              gestureEnabled: false,
+              headerBackVisible: false,
+            }}
+          />
+        </Stack.Navigator>
+      </NavigationContainer>
     </StripeProvider>
   );
 };

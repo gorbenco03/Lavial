@@ -9,8 +9,6 @@ const cities = [
   'Brașov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
 ]; 
 
-
-
 const FirstPage = ({ navigation }: any) => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
@@ -28,8 +26,6 @@ const FirstPage = ({ navigation }: any) => {
   const today = getToday();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredCities, setFilteredCities] = useState<string[]>(cities);
-
-
 
   const handleSwap = () => {
     // Schimbăm valorile dintre orașul de plecare și cel de destinație
@@ -132,16 +128,11 @@ const FirstPage = ({ navigation }: any) => {
   useEffect(() => {
     updateFilteredCities();
   }, [from]); // Re-run when 'from' changes
-  
-
-
-
-
 
   return (
     <ScrollView style={styles.container}>
       <View style={styles.form}>
-        <Text style={styles.headerText}>Calatorii comfortabile impreuna cu noi!</Text>
+        <Text style={styles.headerText}>Călătorii comfortabile împreună cu noi!</Text>
         <View style={styles.inputRow}>
           <TouchableOpacity onPress={() => { setIsModalVisible(true); setSettingCityFor('from'); }} style={styles.modalTrigger}>
             <Text>{from || 'Pornire de la '}</Text>
@@ -151,7 +142,7 @@ const FirstPage = ({ navigation }: any) => {
             <MaterialIcons name="swap-horiz" size={24} style={styles.swapIcon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { setIsModalVisible(true); setSettingCityFor('to'); }} style={styles.modalTrigger}>
-            <Text>{to || 'Destinatie la '}</Text>
+            <Text>{to || 'Destinație la '}</Text>
             <MaterialIcons name="arrow-drop-down" size={24} style={styles.dropdownIcon} />
           </TouchableOpacity>
         </View>
@@ -160,18 +151,16 @@ const FirstPage = ({ navigation }: any) => {
           <Text style={styles.dateValue}>{outboundDate ? formatDate(outboundDate) : 'Selectează data'}</Text>
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.dateRow, { backgroundColor: outboundDate ? '#A6E3E9' : '#A6E3E9' }]}
+          style={[styles.dateRow, { backgroundColor: outboundDate ? '#E0E0E0' : '#F5F5F5' }]}
           onPress={() => handleDatePress('return')}
           disabled={!outboundDate}
         >
-
           <Text style={styles.dateText}>Retur</Text>
           <Text style={styles.dateValue}>{returnDate ? formatDate(returnDate) : ''}</Text>
         </TouchableOpacity>
 
         {isDatePickerVisible && (
           <View style={[styles.datePickerContainer, { top: datePickerPosition.current }]}>
-
             <DatePicker
               mode='calendar'
               selected={date}
@@ -180,7 +169,7 @@ const FirstPage = ({ navigation }: any) => {
               onDateChange={onDateChange}
             />
             <TouchableOpacity onPress={() => setIsDatePickerVisible(false)} style={styles.closeButton}>
-              <Text style={styles.searchButtonText}>Inchide</Text>
+              <Text style={styles.searchButtonText}>Închide</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -196,7 +185,7 @@ const FirstPage = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.searchButton} onPress={goToPersonalDetails}>
-          <Text style={styles.searchButtonText}>Continua</Text>
+          <Text style={styles.searchButtonText}>Continuă</Text>
         </TouchableOpacity>
       </View>
 
@@ -214,7 +203,7 @@ const FirstPage = ({ navigation }: any) => {
             <View style={styles.modalItemSearch}>
               <MaterialIcons name="search" style={styles.cityIcon} size={24} />
               <TextInput
-                placeholder="Cauta oras"
+                placeholder="Caută oraș"
                 placeholderTextColor="#999"
                 style={styles.searchInput}
                 value={searchQuery}
@@ -222,20 +211,19 @@ const FirstPage = ({ navigation }: any) => {
               />
             </View>
             <ScrollView>
-            {filteredCities.map((city, index) => (
-                  <TouchableOpacity key={index} onPress={() => {
-                    setCity(city);
-                    setIsModalVisible(false);
-                  }} style={styles.modalItem}>
-                    <MaterialIcons name="location-city" size={24} style={styles.cityIcon} />
-                    <Text style={styles.modalText}>{city}</Text>
-                  </TouchableOpacity>
-                ))}
+              {filteredCities.map((city, index) => (
+                <TouchableOpacity key={index} onPress={() => {
+                  setCity(city);
+                  setIsModalVisible(false);
+                }} style={styles.modalItem}>
+                  <MaterialIcons name="location-city" size={24} style={styles.cityIcon} />
+                  <Text style={styles.modalText}>{city}</Text>
+                </TouchableOpacity>
+              ))}
             </ScrollView>
           </View>
         </View>
       </Modal>
-
     </ScrollView>
   );
 };
@@ -243,11 +231,11 @@ const FirstPage = ({ navigation }: any) => {
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: 'white', // fundal alb
+    backgroundColor: '#F0F0F0', // fundal gri deschis
     paddingVertical: 20, // adaugă padding vertical
   },
   form: {
-    backgroundColor: '#CBF1F5', // fundal pentru formular
+    backgroundColor: '#FFFFFF', // fundal alb pentru formular
     borderRadius: 12,
     padding: 20,
     marginHorizontal: 20,
@@ -263,19 +251,15 @@ const styles = StyleSheet.create({
   },
   closeTextButton: {
     fontSize: 16,
-
-
   },
-
   datePickerContainer: {
     position: 'relative',
     backgroundColor: 'white',
     borderRadius: 22,
     marginVertical: 10,
-
   },
   closeButton: {
-    backgroundColor: '#393E46', // Schimbare la culoarea fundalului
+    backgroundColor: '#1E90FF', // fundal albastru deschis
     borderRadius: 10,
     padding: 5,
     marginHorizontal: 100,
@@ -289,7 +273,6 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 3,
-
   },
   formLabel: {
     fontSize: 24,
@@ -300,16 +283,12 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    color: "white",
     marginBottom: 20,
   },
   CalendarStyle: {
     backgroundColor: 'white',
     borderRadius: 22,
-
-
   },
-
   textInput: {
     flex: 1,
     borderWidth: 1,
@@ -331,13 +310,11 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     padding: 15,
     marginVertical: 8,
-    borderWidth: 0,
-    marginTop: 5,
+    borderWidth: 1,
     borderColor: '#ddd',
     borderRadius: 10,
-    backgroundColor: '#A6E3E9', // Background pentru data de tur
+    backgroundColor: '#E0E0E0', // fundal gri foarte deschis pentru date
   },
-
   dateText: {
     fontSize: 16,
     color: "black",
@@ -351,7 +328,6 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     marginBottom: 20,
     marginTop: 20,
-
   },
   personIcon: {
     marginRight: 10,
@@ -367,7 +343,7 @@ const styles = StyleSheet.create({
     color: "black"
   },
   searchButton: {
-    backgroundColor: '#393E46', // Schimbare la culoarea fundalului
+    backgroundColor: '#1E90FF', // fundal albastru deschis
     borderRadius: 10,
     padding: 20,
     marginHorizontal: 0,
@@ -381,20 +357,16 @@ const styles = StyleSheet.create({
     shadowOpacity: 0.2,
     shadowRadius: 2,
     elevation: 3,
-
   },
-
   dropdownIcon: {
     marginLeft: 'auto',
   },
-
   headerText: {
     textAlign: 'center', // Alinează textul în centru pe orizontală
     fontSize: 24, // sau orice dimensiune preferi
     fontWeight: 'bold',
     marginBottom: 10, // adaugă un spațiu vertical sus și jos pentru estetică
   },
-
   searchButtonText: {
     color: '#fff',
     fontSize: 18,
@@ -412,7 +384,7 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     width: '40%',
     padding: 10,
-    backgroundColor: '#A6E3E9',
+    backgroundColor: '#E0E0E0',
   },
   closeMoButton: {
     position: 'absolute',
@@ -476,6 +448,5 @@ const styles = StyleSheet.create({
     color: '#fff', // Icon color to be visible on dark bg
   },
 });
-
 
 export default FirstPage;

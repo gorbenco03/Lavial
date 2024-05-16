@@ -1,17 +1,21 @@
-import { useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-native';
 import LottieView from 'lottie-react-native';
-import React from 'react'; 
-const FinalPage = ({ navigation, route } : any) => {
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
+import { RootStackParamList, TravelDetailsType } from '../App'; 
+
+type FinalProps = NativeStackScreenProps<RootStackParamList, 'Final'>;
+
+const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
   const { travelDetails } = route.params;
-  const [qrData, setQrData] = useState([]);
+  const [qrData, setQrData] = useState<string[]>([]);
 
   useEffect(() => {
     if (travelDetails) {
-      const qrDataArray : any = [];
+      const qrDataArray: string[] = [];
       const { outbound, return: returnDetails } = travelDetails;
 
-      travelDetails.passengers.forEach((passenger : any) => {
+      travelDetails.passengers.forEach((passenger) => {
         const qrStringOutbound = JSON.stringify({
           name: passenger.name,
           surname: passenger.surname,
@@ -59,11 +63,11 @@ const FinalPage = ({ navigation, route } : any) => {
     }
   }, [travelDetails]);
 
-  const sendDataToBackend = async (qrDataArray : any , email : any ) => {
+  const sendDataToBackend = async (qrDataArray: string[], email: string) => {
     try {
       const requestData = JSON.stringify({ qrData: qrDataArray, email });
       console.log('Trimite către server:', requestData);
-      const response = await fetch('http://206.189.249.99:3000/send-qr', {
+      const response = await fetch('http://159.89.107.143:3000/send-qr', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -99,17 +103,17 @@ const FinalPage = ({ navigation, route } : any) => {
   return (
     <ScrollView style={styles.containerScroll} contentContainerStyle={styles.contentContainer}>
       <View style={styles.container}>
-        <Text style={styles.headerText}>Success!</Text>
+        <Text style={styles.headerText}>Tranzacție finalizată cu succes!</Text>
         <View style={styles.animationContainer}>
           <LottieView 
             source={require('../assets/animation.json')} 
             autoPlay 
             loop={false} 
             style={styles.lottie}
-            speed={0.5} // Adjust the speed here
+            speed={0.8} // Adjust the speed here
           />
         </View>
-        <Text style={styles.ticketText}>Biletele vor fi trimise pe mail.</Text>
+        <Text style={styles.ticketText}>Biletele tale vor fi trimise pe mail.</Text>
       </View>
       <TouchableOpacity style={styles.payButton} onPress={goToHome}>
         <Text style={styles.searchButtonText}>Mergi la pagina principala</Text>
@@ -117,13 +121,11 @@ const FinalPage = ({ navigation, route } : any) => {
     </ScrollView>
   );
 };
-
 export default FinalPage;
-
 const styles = StyleSheet.create({
   containerScroll: {
     flex: 1,
-    backgroundColor: '#fff',
+    backgroundColor: '#F0F0F0', // fundal gri deschis
   },
   contentContainer: {
     flexGrow: 1,
@@ -139,6 +141,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    color: '#333',
   },
   animationContainer: {
     justifyContent: 'center',
@@ -153,15 +156,16 @@ const styles = StyleSheet.create({
     fontSize: 18,
     textAlign: 'center',
     marginBottom: 20,
+    color: '#555',
   },
   payButton: {
     justifyContent: 'center',
     alignItems: 'center',
-    backgroundColor: '#393E46',
+    backgroundColor: '#1E90FF', // fundal albastru deschis
     borderRadius: 10,
     padding: 20,
     marginHorizontal: 20,
-    marginBottom: 15,
+    marginBottom: 30,
     shadowColor: '#000',
     shadowOffset: {
       width: 0,

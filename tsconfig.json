@@ -4,9 +4,16 @@
     "module": "commonjs",
     "strict": true,
     "jsx": "react",
-    "esModuleInterop": true,
-    // other options...
+    "esModuleInterop": true
   },
-  "include": ["./*.ts", "./*.tsx", "./pages/**/*.ts", "./pages/**/*.tsx"],
-  "exclude": ["node_modules"]
+  "include": [
+    "./*.ts",
+    "./*.tsx",
+    "./pages/**/*.ts",
+    "./pages/**/*.tsx"
+  ],
+  "exclude": [
+    "node_modules"
+  ],
+  "extends": "expo/tsconfig.base"
 }

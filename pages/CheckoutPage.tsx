@@ -1,38 +1,16 @@
-import  {React,  useState, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
+import { RootStackParamList, TravelDetailsType, Passenger, TravelDetails } from '../App'; 
+import { NativeStackScreenProps } from '@react-navigation/native-stack';
 
-interface Passenger {
-  name: string;
-  surname: string;
-  phone: string;
-  email: string;
-  passportSerial: string;
-  isStudent: boolean;
-  studentIdSerial: string;
-}
+type CheckoutProps = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
-interface RouteParams {
-  from: string;
-  to: string;
-  outboundDate: string;
-  returnDate?: string;
-  passengers: Passenger[];
-}
-
-interface TravelDetails {
-  from: string;
-  fromStation: string;
-  to: string;
-  toStation: string;
-  departureTime: string;
-  arrivalTime: string;
-}
-
-const CheckoutPage = ({ navigation, route }: { navigation: any; route: { params: RouteParams } }) => {
+const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
+
   const { from, to, outboundDate, returnDate, passengers } = route.params;
 
   const fetchPaymentSheetParams = async () => {
@@ -132,7 +110,7 @@ const CheckoutPage = ({ navigation, route }: { navigation: any; route: { params:
   });
 
   const calculateTotalPrice = () => {
-    return passengers.reduce((total, passenger) => {
+    return passengers.reduce((total: number, passenger: Passenger) => {
       const basePrice = destinationPrices[`${from}-${to}`] || 0;
       let totalPrice = basePrice;
 
@@ -152,14 +130,14 @@ const CheckoutPage = ({ navigation, route }: { navigation: any; route: { params:
   };
 
   const navigateToFinalPage = () => {
-    const travelDetails = {
-        from,
-        to,
-        outboundDate,
-        returnDate,
-        passengers,
-        outbound: travelDetailsOutbound,
-        return: travelDetailsReturn,
+    const travelDetails: TravelDetailsType = {
+      from,
+      to,
+      outboundDate,
+      returnDate,
+      passengers,
+      outbound: travelDetailsOutbound,
+      return: travelDetailsReturn,
     };
     console.log(travelDetailsOutbound, travelDetailsReturn);
     navigation.navigate('Final', { travelDetails });
@@ -272,13 +250,14 @@ const CheckoutPage = ({ navigation, route }: { navigation: any; route: { params:
     
     return departureTimes[city] || '16:00'; // Default time if city not found
   };
+
   timeAndPlace.forEach(detail => {
     const reverseDetail: TravelDetails = {
       from: detail.to,
       fromStation: detail.toStation,
       to: detail.from,
       toStation: detail.fromStation,
-      departureTime: getReturnDepartureTime(detail.to),  // Use static departure times for return
+      departureTime: getReturnDepartureTime(detail.to),
       arrivalTime: '07:00', // Assuming the return arrival time is the same
     };
     timeAndPlace.push(reverseDetail);
@@ -294,8 +273,6 @@ const CheckoutPage = ({ navigation, route }: { navigation: any; route: { params:
 
   const travelDetailsOutbound = getTravelDetails(from, to);
   const travelDetailsReturn = returnDate ? getTravelDetails(to, from) : undefined;
-
-  
 
   return (
     <StripeProvider
@@ -367,7 +344,7 @@ const CheckoutPage = ({ navigation, route }: { navigation: any; route: { params:
           </View>
         )}
 
-        {passengers.map((passenger, index) => (
+        {passengers.map((passenger: Passenger, index: number) => (
           <View key={index} style={styles.section}>
             <Text style={styles.sectionTitle}>Informații personale despre pasagerul {index + 1}</Text>
             <Text style={styles.detailsName}>
@@ -411,7 +388,7 @@ const CheckoutPage = ({ navigation, route }: { navigation: any; route: { params:
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#E3FDFD',
+    backgroundColor: '#F0F0F0', // fundal gri deschis
   },
   headerText: {
     textAlign: 'center',
@@ -422,7 +399,7 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   section: {
-    backgroundColor: '#CBF1F5',
+    backgroundColor: '#FFFFFF', // fundal alb pentru secțiune
     borderRadius: 12,
     padding: 20,
     marginHorizontal: 20,
@@ -432,7 +409,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1, // umbră mai subtilă
     shadowRadius: 2,
     elevation: 3,
   },
@@ -475,7 +452,7 @@ const styles = StyleSheet.create({
     margin: 8,
   },
   totalSection: {
-    backgroundColor: '#CBF1F5',
+    backgroundColor: '#FFFFFF', // fundal alb pentru secțiunea totală
     borderRadius: 10,
     padding: 20,
     marginHorizontal: 20,
@@ -486,7 +463,7 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.2,
+    shadowOpacity: 0.1, // umbră mai subtilă
     shadowRadius: 2,
     elevation: 3,
   },
@@ -506,7 +483,7 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#393E46',
+    backgroundColor: '#1E90FF', // fundal albastru deschis
     borderRadius: 10,
     padding: 20,
     marginHorizontal: 20,
@@ -523,7 +500,7 @@ const styles = StyleSheet.create({
   payButtonText: {
     fontSize: 16,
     fontWeight: 'normal',
-    color: '#fff',
+    color: '#fff', // culoarea textului alb
   },
 });
 

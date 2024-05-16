@@ -131,11 +131,11 @@
   const styles = StyleSheet.create({
     container: {
       flex: 1,
-      backgroundColor: '#E3FDFD',
+      backgroundColor: '#F0F0F0', // fundal gri deschis
       paddingVertical: 20,
     },
     section: {
-      backgroundColor: '#CBF1F5',
+      backgroundColor: '#FFFFFF', // fundal alb pentru secțiune
       borderRadius: 12,
       padding: 20,
       marginHorizontal: 20,
@@ -145,7 +145,7 @@
         width: 0,
         height: 2,
       },
-      shadowOpacity: 0.2,
+      shadowOpacity: 0.1, // umbră mai subtilă
       shadowRadius: 2,
       elevation: 3,
     },
@@ -157,13 +157,13 @@
       textAlign: 'center',
     },
     input: {
-      borderColor: '#ccc', // Schimbare la culoarea bordurii
-      backgroundColor: '#A6E3E9', // Schimbare la culoarea fundalului
+      borderColor: '#ddd', // culoarea bordurii gri deschis
+      backgroundColor: '#E0E0E0', // fundal gri foarte deschis
       padding: 10,
       borderRadius: 10,
       marginBottom: 20,
       fontSize: 16,
-      color: 'black', // Schimbare la culoarea textului
+      color: 'black', // culoarea textului negru
     },
     detailsRow: {
       flexDirection: 'row',
@@ -178,7 +178,7 @@
       marginLeft: 8,
     },
     payButton: {
-      backgroundColor: '#393E46', // Schimbare la culoarea fundalului
+      backgroundColor: '#1E90FF', // fundal albastru deschis
       borderRadius: 10,
       padding: 20,
       marginHorizontal: 20,
@@ -196,7 +196,7 @@
     payButtonText: {
       fontSize: 16,
       fontWeight: 'bold',
-      color: '#fff', // Schimbare la culoarea textului
+      color: '#fff', // culoarea textului alb
     },
   });
 
