@@ -59,7 +59,7 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const App = () => {
   return (
     <StripeProvider
-      publishableKey="pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6"
+      publishableKey='${STRIPE_PUBLISHABLE_KEY}' 
       urlScheme="your-url-scheme"  // required for 3D Secure and bank redirects
     >
       <NavigationContainer>

@@ -4,7 +4,7 @@ import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
 import { RootStackParamList, TravelDetailsType, Passenger, TravelDetails } from '../App'; 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-
+import {STRIPE_PUBLISHABLE_KEY, SERVER_URL, STRIPE_RETURN_URL , DEFAULT_BILLING_NAME, DEFAULT_BILLING_EMAIL } from '@env'
 type CheckoutProps = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
 const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
@@ -15,8 +15,8 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   const fetchPaymentSheetParams = async () => {
     const totalAmount = calculateTotalPrice() * 100;
-    const publishableKey = 'pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6';
-    const response = await fetch(`http://159.89.107.143:3000/payment-sheet`, {
+    const publishableKey = '${STRIPE_PUBLISHABLE_KEY}';
+    const response = await fetch(`${SERVER_URL}/payment-sheet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -33,6 +33,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     };
   };
 
+  console.log(STRIPE_PUBLISHABLE_KEY); 
   const initializePaymentSheet = async () => {
     const {
       paymentIntent,

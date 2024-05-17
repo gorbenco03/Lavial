@@ -4,6 +4,10 @@
     "module": "commonjs",
     "strict": true,
     "jsx": "react",
+    "baseUrl": "./",
+    "paths": {
+      "@env": ["@types/env.d.ts"]
+    },
     "esModuleInterop": true
   },
   "include": [
