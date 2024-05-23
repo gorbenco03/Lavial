@@ -8,7 +8,7 @@ import SecondPage from './pages/SecondPage';
 import CheckoutPage from './pages/CheckoutPage';
 import FinalPage from './pages/FinalPage';
 import { StripeProvider } from '@stripe/stripe-react-native';
-
+import {EXPO_STRIPE_PUBLISHABLE_KEY, EXPO_SERVER_URL, EXPO_STRIPE_RETURN_URL} from '@env'
 export interface Passenger {
   name: string;
   surname: string;
@@ -59,9 +59,10 @@ const Stack = createNativeStackNavigator<RootStackParamList>();
 const App = () => {
   return (
     <StripeProvider
-      publishableKey='${STRIPE_PUBLISHABLE_KEY}' 
+      publishableKey='${EXPO_STRIPE_PUBLISHABLE_KEY}' 
       urlScheme="your-url-scheme"  // required for 3D Secure and bank redirects
     >
+
       <NavigationContainer>
         <Stack.Navigator initialRouteName="Acasa">
           <Stack.Screen 

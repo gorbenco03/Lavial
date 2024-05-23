@@ -3,7 +3,7 @@ import { View, Text, StyleSheet, TouchableOpacity, ScrollView } from 'react-nati
 import LottieView from 'lottie-react-native';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { RootStackParamList, TravelDetailsType } from '../App'; 
-import {SERVER_URL} from '@env'
+import {EXPO_SERVER_URL} from '@env'
 type FinalProps = NativeStackScreenProps<RootStackParamList, 'Final'>;
 
 const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
@@ -31,7 +31,7 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
           toStation: outbound?.toStation || '',
           departureTime: outbound?.departureTime || '',
           arrivalTime: outbound?.arrivalTime || '',
-          tripType: 'Plecare'
+          tripType: 'tur'
         });
 
         qrDataArray.push(qrStringOutbound);
@@ -52,7 +52,7 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
             toStation: returnDetails?.toStation || '',
             departureTime: returnDetails?.departureTime || '',
             arrivalTime: returnDetails?.arrivalTime || '',
-            tripType: 'Retur'
+            tripType: 'retur'
           });
 
           qrDataArray.push(qrStringReturn);
@@ -67,7 +67,7 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
     try {
       const requestData = JSON.stringify({ qrData: qrDataArray, email });
       console.log('Trimite către server:', requestData);
-      const response = await fetch(`${SERVER_URL}/send-qr`, {
+      const response = await fetch(`${EXPO_SERVER_URL}/send-qr`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

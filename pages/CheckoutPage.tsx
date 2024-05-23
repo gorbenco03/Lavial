@@ -4,7 +4,7 @@ import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
 import { RootStackParamList, TravelDetailsType, Passenger, TravelDetails } from '../App'; 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {STRIPE_PUBLISHABLE_KEY, SERVER_URL, STRIPE_RETURN_URL , DEFAULT_BILLING_NAME, DEFAULT_BILLING_EMAIL } from '@env'
+import {EXPO_STRIPE_PUBLISHABLE_KEY, EXPO_STRIPE_RETURN_URL , EXPO_SERVER_URL } from '@env'
 type CheckoutProps = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
 const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
@@ -15,8 +15,8 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   const fetchPaymentSheetParams = async () => {
     const totalAmount = calculateTotalPrice() * 100;
-    const publishableKey = '${STRIPE_PUBLISHABLE_KEY}';
-    const response = await fetch(`${SERVER_URL}/payment-sheet`, {
+    
+    const response = await fetch(`${EXPO_SERVER_URL}/payment-sheet`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -28,18 +28,18 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     return {
       paymentIntent,
       ephemeralKey,
-      publishableKey,
+      
       customer,
     };
   };
 
-  console.log(STRIPE_PUBLISHABLE_KEY); 
+  console.log(EXPO_STRIPE_PUBLISHABLE_KEY); 
   const initializePaymentSheet = async () => {
     const {
       paymentIntent,
       ephemeralKey,
       customer,
-      publishableKey,
+    
     } = await fetchPaymentSheetParams();
 
     const { error } = await initPaymentSheet({
@@ -47,7 +47,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       customerId: customer,
       customerEphemeralKeySecret: ephemeralKey,
       paymentIntentClientSecret: paymentIntent,
-      returnURL: 'your-app-scheme://stripe-redirect',
+      returnURL: `${EXPO_STRIPE_RETURN_URL}`, 
       defaultBillingDetails: {
         name: 'Chiril Gorbenco',
         email: 'chiril.gorbenco@icloud.com',
@@ -140,7 +140,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       outbound: travelDetailsOutbound,
       return: travelDetailsReturn,
     };
-    console.log(travelDetailsOutbound, travelDetailsReturn);
+   
     navigation.navigate('Final', { travelDetails });
   };
 
@@ -266,7 +266,6 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   const getTravelDetails = (from: string, to: string): TravelDetails | undefined => {
     const details = uniqueTimeAndPlace.find((details) => details.from === from && details.to === to);
-    console.log(`Details for route ${from} -> ${to}:`, details);
     return details;
   };
 
@@ -277,8 +276,8 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   return (
     <StripeProvider
-      publishableKey="pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6"
-      urlScheme="your-url-scheme"
+      publishableKey={EXPO_STRIPE_PUBLISHABLE_KEY}
+      urlScheme={EXPO_STRIPE_RETURN_URL}
     >
       <ScrollView style={styles.container}>
         <Text style={styles.headerText}>Detalii despre călătorie</Text>
@@ -385,6 +384,8 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     </StripeProvider>
   );
 };
+
+export default CheckoutPage;
 
 const styles = StyleSheet.create({
   container: {
@@ -504,5 +505,3 @@ const styles = StyleSheet.create({
     color: '#fff', // culoarea textului alb
   },
 });
-
-export default CheckoutPage;
