@@ -33,7 +33,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     };
   };
 
-  console.log(EXPO_STRIPE_PUBLISHABLE_KEY); 
+  console.log(process.env.EXPO_SERVER_URL); 
   const initializePaymentSheet = async () => {
     const {
       paymentIntent,
