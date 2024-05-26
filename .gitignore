@@ -8,7 +8,7 @@ node_modules/
 dist/
 web-build/
 
-eas.json
+
 
 # Native
 android/
