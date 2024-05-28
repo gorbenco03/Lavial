@@ -122,6 +122,7 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
   );
 };
 export default FinalPage;
+
 const styles = StyleSheet.create({
   containerScroll: {
     flex: 1,

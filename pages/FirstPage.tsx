@@ -227,6 +227,7 @@ const FirstPage = ({ navigation }: any) => {
     </ScrollView>
   );
 };
+export default FirstPage;
 
 const styles = StyleSheet.create({
   container: {
@@ -448,5 +449,3 @@ const styles = StyleSheet.create({
     color: '#fff', // Icon color to be visible on dark bg
   },
 });
-
-export default FirstPage;

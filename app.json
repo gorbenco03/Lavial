@@ -18,6 +18,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yourapp.bundle",
+      "icon": "./assets/ios/AppIcon.appiconset/Icon-App-60x60@3x.png",
       "infoPlist": {
         "NSPhotoLibraryUsageDescription": "App needs access to photo library in order to save PDF",
         "NSPhotoLibraryAddUsageDescription": "App needs access to photo library in order to save PDF",
@@ -26,9 +27,10 @@
     },
     "android": {
       "adaptiveIcon": {
-        "foregroundImage": "./assets/icon.png",
+        "foregroundImage": "./assets/android/mipmap-xxxhdpi/ic_launcher_round.png",
         "backgroundColor": "#ffffff"
       },
+      "icon": "./assets/icon.png",
       "permissions": [
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE"

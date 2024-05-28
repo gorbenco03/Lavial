@@ -48,19 +48,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     }
   };
   
-  const testFetch = async () => {
-    try {
-      const response = await fetch(`${EXPO_SERVER_URL}/health`);
-      const data = await response.json();
-      console.log('Test fetch response:', data);
-    } catch (error) {
-      console.error('Test fetch error:', error);
-    }
-  };
   
-  useEffect(() => {
-    testFetch();
-  }, []);
   
   
   const initializePaymentSheet = async () => {

@@ -1,12 +1,11 @@
 import React, { useState } from 'react';
-import { View, TextInput, Text, StyleSheet, FlatList, Modal, Button, TouchableOpacity, Switch, ScrollView, Alert } from 'react-native';
+import { View, TextInput, Text, StyleSheet, FlatList, Modal, Button, TouchableOpacity, Switch, ScrollView } from 'react-native';
 import Checkbox from 'expo-checkbox';
 import DropDownPicker from 'react-native-dropdown-picker';
 
 const SecondPage = ({ navigation, route }: any) => {
   const { from, to, outboundDate, returnDate, numberOfPeople } = route.params;
 
-  // Create an array of passenger objects
   interface Passenger {
     name: string;
     surname: string;
@@ -18,6 +17,10 @@ const SecondPage = ({ navigation, route }: any) => {
     passportSerial: string;
     isStudent: boolean;
     studentIdSerial: string;
+    nameError: boolean;
+    surnameError: boolean;
+    passportSerialError: boolean;
+    studentIdSerialError: boolean;
   }
 
   const initialPassengers: Passenger[] = Array.from({ length: numberOfPeople }, () => ({
@@ -31,16 +34,30 @@ const SecondPage = ({ navigation, route }: any) => {
     passportSerial: '',
     isStudent: false,
     studentIdSerial: '',
+    nameError: false,
+    surnameError: false,
+    passportSerialError: false,
+    studentIdSerialError: false,
   }));
 
   const [passengers, setPassengers] = useState<Passenger[]>(initialPassengers);
   const [agreeToTerms, setAgreeToTerms] = useState(false);
+  const [agreeToTermsError, setAgreeToTermsError] = useState(false);
   const [modalVisible, setModalVisible] = useState(false);
   const [open, setOpen] = useState<boolean[]>(Array(numberOfPeople).fill(false));
   const [prefixItems, setPrefixItems] = useState([
     { label: '🇷🇴 +40', value: '+40' },
-    { label: '🇲🇩 +373', value: '+373' }
+    { label: '🇲🇩 +373', value: '+373' },
+    { label: '🇺🇸 +1', value: '+1' },
+    { label: '🇬🇧 +44', value: '+44' },
+    { label: '🇩🇪 +49', value: '+49' },
+    { label: '🇫🇷 +33', value: '+33' },
+    { label: '🇮🇹 +39', value: '+39' },
+    { label: '🇪🇸 +34', value: '+34' },
+    { label: '🇨🇳 +86', value: '+86' },
+    { label: '🇮🇳 +91', value: '+91' }
   ]);
+
 
   const setPassengerField = <K extends keyof Passenger>(
     index: number,
@@ -79,23 +96,74 @@ const SecondPage = ({ navigation, route }: any) => {
   };
 
   const validatePassenger = (passenger: Passenger) => {
-    const { name, surname, email, phone, passportSerial, isStudent, studentIdSerial } = passenger;
-    if (!name || !surname || !email || !phone || !passportSerial || (isStudent && !studentIdSerial)) {
-      return false;
+    let isValid = true;
+    const updatedPassenger = { ...passenger };
+
+    if (!passenger.name) {
+      updatedPassenger.nameError = true;
+      isValid = false;
+    } else {
+      updatedPassenger.nameError = false;
     }
-    return true;
+
+    if (!passenger.surname) {
+      updatedPassenger.surnameError = true;
+      isValid = false;
+    } else {
+      updatedPassenger.surnameError = false;
+    }
+
+    if (!passenger.email) {
+      updatedPassenger.emailError = true;
+      isValid = false;
+    } else if (!validateEmail(passenger.email)) {
+      updatedPassenger.emailError = true;
+      isValid = false;
+    } else {
+      updatedPassenger.emailError = false;
+    }
+
+    if (!passenger.phone) {
+      updatedPassenger.phoneError = true;
+      isValid = false;
+    } else if (!validatePhone(passenger.phone, passenger.phonePrefix)) {
+      updatedPassenger.phoneError = true;
+      isValid = false;
+    } else {
+      updatedPassenger.phoneError = false;
+    }
+
+    if (!passenger.passportSerial) {
+      updatedPassenger.passportSerialError = true;
+      isValid = false;
+    } else {
+      updatedPassenger.passportSerialError = false;
+    }
+
+    if (passenger.isStudent && !passenger.studentIdSerial) {
+      updatedPassenger.studentIdSerialError = true;
+      isValid = false;
+    } else {
+      updatedPassenger.studentIdSerialError = false;
+    }
+
+    return { updatedPassenger, isValid };
   };
 
   const goToCheckout = () => {
-    if (passengers.some(passenger => !validatePassenger(passenger))) {
-      Alert.alert('Eroare', 'Te rog completează toate câmpurile corect pentru toți pasagerii înainte de a continua.');
+    const updatedPassengers = passengers.map(passenger => validatePassenger(passenger).updatedPassenger);
+    setPassengers(updatedPassengers);
+
+    const isAllPassengersValid = !updatedPassengers.some(passenger => !validatePassenger(passenger).isValid);
+
+    if (!isAllPassengersValid || !agreeToTerms) {
+      if (!agreeToTerms) {
+        setAgreeToTermsError(true);
+      }
       return;
     }
 
-    if (!agreeToTerms) {
-      Alert.alert('Eroare', 'Trebuie să fii de acord cu prelucrarea datelor cu caracter personal.');
-      return;
-    }
+    setAgreeToTermsError(false);
 
     const passengersWithFullPhone = passengers.map(passenger => ({
       ...passenger,
@@ -120,19 +188,21 @@ const SecondPage = ({ navigation, route }: any) => {
         style={styles.container}
         renderItem={({ item, index }) => (
           <View key={index} style={[styles.section, { zIndex: numberOfPeople - index }]}>
-            <Text style={styles.sectionTitle}>Detalii despre pasager {index + 1}</Text>
+            <Text style={styles.sectionTitle}>INFORMATII DESPRE CALATOR</Text>
             <TextInput
-              style={styles.input}
+              style={[styles.input, item.nameError ? styles.inputError : {}]}
               placeholder="Nume"
               onChangeText={(text) => setPassengerField(index, 'name', text)}
               value={item.name}
             />
+            {item.nameError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
             <TextInput
-              style={styles.input}
+              style={[styles.input, item.surnameError ? styles.inputError : {}]}
               placeholder="Prenume"
               onChangeText={(text) => setPassengerField(index, 'surname', text)}
               value={item.surname}
             />
+            {item.surnameError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
             <TextInput
               style={[styles.input, item.emailError ? styles.inputError : {}]}
               placeholder="Email"
@@ -141,39 +211,43 @@ const SecondPage = ({ navigation, route }: any) => {
             />
             {item.emailError && <Text style={styles.errorText}>Format email invalid</Text>}
             <View style={styles.phoneRow}>
-              <DropDownPicker
-                open={open[index]}
-                value={item.phonePrefix}
-                items={prefixItems}
-                setOpen={(callback) => {
-                  const newOpen = [...open];
-                  newOpen[index] = typeof callback === 'function' ? callback(open[index]) : callback;
-                  setOpen(newOpen);
-                }}
-                setValue={(callback) => {
-                  const value = typeof callback === 'function' ? callback(item.phonePrefix) : callback;
-                  setPassengerField(index, 'phonePrefix', value);
-                }}
-                setItems={setPrefixItems}
-                containerStyle={[styles.dropdownContainer, { zIndex: 1000 }]}
-                style={styles.dropdown}
-                textStyle={styles.dropdownText}
-              />
-              <TextInput
-                style={[styles.input, styles.phoneInput, item.phoneError ? styles.inputError : {}]}
-                placeholder="Numarul de telefon"
-                onChangeText={(text) => setPassengerField(index, 'phone', text)}
-                keyboardType="phone-pad"
-                value={item.phone}
-              />
+              <View style={styles.phoneContainer}>
+                <DropDownPicker
+                  open={open[index]}
+                  value={item.phonePrefix}
+                  items={prefixItems}
+                  setOpen={(callback) => {
+                    const newOpen = [...open];
+                    newOpen[index] = typeof callback === 'function' ? callback(open[index]) : callback;
+                    setOpen(newOpen);
+                  }}
+                  setValue={(callback) => {
+                    const value = typeof callback === 'function' ? callback(item.phonePrefix) : callback;
+                    setPassengerField(index, 'phonePrefix', value);
+                  }}
+                  setItems={setPrefixItems}
+                  containerStyle={styles.dropdownContainer}
+                  style={styles.dropdown}
+                  textStyle={styles.dropdownText}
+                  dropDownContainerStyle={styles.dropDownBox}
+                />
+                <TextInput
+                  style={[styles.phoneInput, item.phoneError ? styles.inputError : {}]}
+                  placeholder="Numarul de telefon"
+                  onChangeText={(text) => setPassengerField(index, 'phone', text)}
+                  keyboardType="phone-pad"
+                  value={item.phone}
+                />
+              </View>
             </View>
             {item.phoneError && <Text style={styles.errorText}>Format numar de telefon invalid</Text>}
             <TextInput
-              style={styles.input}
+              style={[styles.input, item.passportSerialError ? styles.inputError : {}]}
               placeholder="Seria Pasaport"
               onChangeText={(text) => setPassengerField(index, 'passportSerial', text)}
               value={item.passportSerial}
             />
+            {item.passportSerialError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
             <View style={styles.detailsRow}>
               <Switch
                 value={item.isStudent}
@@ -183,24 +257,31 @@ const SecondPage = ({ navigation, route }: any) => {
             </View>
             {item.isStudent && (
               <TextInput
-                style={styles.input}
+                style={[styles.input, item.studentIdSerialError ? styles.inputError : {}]}
                 placeholder="Seria legitimatiei de student"
                 onChangeText={(text) => setPassengerField(index, 'studentIdSerial', text)}
                 value={item.studentIdSerial}
               />
             )}
+            {item.isStudent && item.studentIdSerialError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
           </View>
         )}
         ListFooterComponent={
           <>
-            <View style={styles.termsRow}>
-              <Checkbox
-                value={agreeToTerms}
-                onValueChange={setAgreeToTerms}
-              />
-              <TouchableOpacity onPress={() => setModalVisible(true)}>
-                <Text style={[styles.detailsRoute, { textDecorationLine: 'underline' }]}>Sunt de acord cu prelucrarea datelor cu caracter personal</Text>
-              </TouchableOpacity>
+            <View style={styles.section}>
+              <View style={styles.termsRow}>
+                <Checkbox
+                  value={agreeToTerms}
+                  onValueChange={(value) => {
+                    setAgreeToTerms(value);
+                    if (value) setAgreeToTermsError(false);
+                  }}
+                />
+                <TouchableOpacity onPress={() => setModalVisible(true)}>
+                  <Text style={styles.detailsRoute}>Sunt de acord cu prelucrarea datelor cu caracter personal</Text>
+                </TouchableOpacity>
+              </View>
+              {agreeToTermsError && <Text style={styles.errorTextTerms}>Te rog sa accepti termenii si conditiile</Text>}
             </View>
             <TouchableOpacity style={styles.payButton} onPress={goToCheckout}>
               <Text style={styles.payButtonText}>Continua</Text>
@@ -284,11 +365,11 @@ const personalDataInfo = `
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F0F0', // fundal gri deschis
+    backgroundColor: '#F0F0F0', // light grey background
     paddingVertical: 20,
   },
   section: {
-    backgroundColor: '#FFFFFF', // fundal alb pentru secțiune
+    backgroundColor: '#FFFFFF', // white background for section
     borderRadius: 12,
     padding: 20,
     marginHorizontal: 20,
@@ -298,25 +379,26 @@ const styles = StyleSheet.create({
       width: 0,
       height: 2,
     },
-    shadowOpacity: 0.1, // umbră mai subtilă
+    shadowOpacity: 0.1, // more subtle shadow
     shadowRadius: 2,
     elevation: 3,
   },
   sectionTitle: {
-    fontSize: 20,
+    fontSize: 25,
     fontWeight: 'bold',
     color: '#333',
-    marginBottom: 10,
+    marginBottom: 20,
     textAlign: 'center',
   },
   input: {
-    borderColor: '#ddd', // culoarea bordurii gri deschis
-    backgroundColor: '#E0E0E0', // fundal gri foarte deschis
+    borderColor: '#ddd', // light grey border color
+    backgroundColor: '#E0E0E0', // very light grey background
     padding: 10,
     borderRadius: 10,
-    marginBottom: 20,
+    height: 50, 
+    marginTop: 20,
     fontSize: 16,
-    color: 'black', // culoarea textului negru
+    color: 'black', // black text color
   },
   inputError: {
     borderColor: 'red',
@@ -325,39 +407,61 @@ const styles = StyleSheet.create({
   errorText: {
     color: 'red',
     fontSize: 12,
-    marginBottom: 10,
+    marginTop: 2,
     marginLeft: 10,
   },
+  errorTextTerms: {
+    color: 'red',
+    fontSize: 12,
+    marginTop: 2,
+    marginLeft: 20,
+    marginRight: 20,
+  }, 
   phoneRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 20,
+    marginTop: 20, 
     zIndex: 1000,
   },
+  phoneContainer: {
+    flexDirection: 'row',
+    alignItems: 'center',
+  },
   dropdownContainer: {
-    width: 100,
-    zIndex: 1000,
+    width: 110,
   },
   dropdown: {
     backgroundColor: '#E0E0E0',
     borderColor: '#ddd',
-    borderWidth: 1,
-    borderRadius: 10,
-    zIndex: 1000,
+    borderTopEndRadius: 0,
+    borderEndEndRadius: 0,
+    borderRightColor:'black',
+    alignContent: 'center'
   },
   dropdownText: {
     fontSize: 16,
     color: 'black',
   },
   phoneInput: {
+    borderColor: '#ddd', // light grey border color
+    backgroundColor: '#E0E0E0', // very light grey background
+    borderTopEndRadius: 10,
+    borderEndEndRadius: 10,
     flex: 1,
-    marginLeft: 10,
-    zIndex: 1,
+    marginLeft: 0,
+    paddingLeft: 10 ,
+    fontSize: 16,
+    color: 'black',
+    height:50, 
+  },
+  dropDownBox: {
+    backgroundColor: '#E0E0E0',
   },
   detailsRow: {
     flexDirection: 'row',
     alignItems: 'center',
     marginBottom: 10,
+    marginTop : 20, 
     borderRadius: 10,
   },
   detailsRoute: {
@@ -368,23 +472,11 @@ const styles = StyleSheet.create({
   },
   termsRow: {
     flexDirection: 'row',
-    backgroundColor: '#FFFFFF', // fundal alb pentru secțiune
-    borderRadius: 12,
     alignItems: 'center',
     marginHorizontal: 20,
-    marginBottom: 20,
-    padding: 20,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1, // umbră mai subtilă
-    shadowRadius: 2,
-    elevation: 3,
   },
   payButton: {
-    backgroundColor: '#1E90FF', // fundal albastru deschis
+    backgroundColor: '#1E90FF', // light blue background
     borderRadius: 10,
     padding: 20,
     marginHorizontal: 20,
@@ -402,6 +494,6 @@ const styles = StyleSheet.create({
   payButtonText: {
     fontSize: 16,
     fontWeight: 'bold',
-    color: '#fff', // culoarea textului alb
+    color: '#fff', // white text color
   },
 });
