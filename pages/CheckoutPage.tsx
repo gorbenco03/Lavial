@@ -84,8 +84,6 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
    
   }, [from, to, returnDate]);
 
-  console.log(process.env.EXPO_SERVER_URL); 
-  console.log(process.env.EXPO_STRIPE_PUBLISHABLE_KEY); 
   const openPaymentSheet = async () => {
     const { error } = await presentPaymentSheet();
 
