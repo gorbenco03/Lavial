@@ -14,57 +14,90 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   const { from, to, outboundDate, returnDate, passengers } = route.params;
 
   const fetchPaymentSheetParams = async () => {
-    const totalAmount = calculateTotalPrice() * 100;
-    
-    const response = await fetch(`${EXPO_SERVER_URL}/payment-sheet`, {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({ totalAmount })
-    });
-    const { paymentIntent, ephemeralKey, customer } = await response.json();
-
-    return {
-      paymentIntent,
-      ephemeralKey,
-      
-      customer,
-    };
-  };
-
-  console.log(process.env.EXPO_SERVER_URL); 
-  console.log(process.env.EXPO_STRIPE_PUBLISHABLE_KEY); 
-  const initializePaymentSheet = async () => {
-    const {
-      paymentIntent,
-      ephemeralKey,
-      customer,
-    
-    } = await fetchPaymentSheetParams();
-
-    const { error } = await initPaymentSheet({
-      merchantDisplayName: "Lavial",
-      customerId: customer,
-      customerEphemeralKeySecret: ephemeralKey,
-      paymentIntentClientSecret: paymentIntent,
-      returnURL: `${EXPO_STRIPE_RETURN_URL}`, 
-      defaultBillingDetails: {
-        name: 'Chiril Gorbenco',
-        email: 'chiril.gorbenco@icloud.com',
+    try {
+      console.log('Fetching payment sheet params...');
+      const totalAmount = calculateTotalPrice() * 100;
+      const response = await fetch(`${EXPO_SERVER_URL}/payment-sheet`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ totalAmount }),
+      });
+  
+      console.log('Response status:', response.status);
+      if (!response.ok) {
+        throw new Error('Failed to fetch payment sheet params');
       }
-    });
-    if (!error) {
-      setLoading(true);
+  
+      const { paymentIntent, ephemeralKey, customer } = await response.json();
+  
+      if (!paymentIntent || !ephemeralKey || !customer) {
+        throw new Error('Missing parameters from payment sheet response');
+      }
+  
+      return {
+        paymentIntent,
+        ephemeralKey,
+        customer,
+      };
+    } catch (error) {
+      console.error('Error fetching payment sheet params:', error);
+      Alert.alert('Error', 'Could not fetch payment sheet parameters. Please try again.');
+      throw error;
     }
   };
+  
+  const testFetch = async () => {
+    try {
+      const response = await fetch(`${EXPO_SERVER_URL}/health`);
+      const data = await response.json();
+      console.log('Test fetch response:', data);
+    } catch (error) {
+      console.error('Test fetch error:', error);
+    }
+  };
+  
+  useEffect(() => {
+    testFetch();
+  }, []);
+  
+  
+  const initializePaymentSheet = async () => {
+    try {
+      const { paymentIntent, ephemeralKey, customer } = await fetchPaymentSheetParams();
+  
+      const { error } = await initPaymentSheet({
+        merchantDisplayName: "Lavial",
+        customerId: customer,
+        customerEphemeralKeySecret: ephemeralKey,
+        paymentIntentClientSecret: paymentIntent,
+        returnURL: `${EXPO_STRIPE_RETURN_URL}`,
+        defaultBillingDetails: {
+          name: 'Chiril Gorbenco',
+          email: 'chiril.gorbenco@icloud.com',
+        }
+      });
+  
+      if (error) {
+        console.error('Error initializing payment sheet:', error);
+        Alert.alert('Error', 'Could not initialize payment sheet. Please try again.');
+      } else {
+        setLoading(true);
+      }
+    } catch (error) {
+      console.error('Error in initializePaymentSheet:', error);
+    }
+  };
+  
 
   useEffect(() => {
     initializePaymentSheet();
-    console.log(`Initial travel details outbound:`, travelDetailsOutbound);
-    console.log(`Initial travel details return:`, travelDetailsReturn);
+   
   }, [from, to, returnDate]);
 
+  console.log(process.env.EXPO_SERVER_URL); 
+  console.log(process.env.EXPO_STRIPE_PUBLISHABLE_KEY); 
   const openPaymentSheet = async () => {
     const { error } = await presentPaymentSheet();
 
