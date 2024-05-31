@@ -48,14 +48,6 @@ const SecondPage = ({ navigation, route }: any) => {
   const [prefixItems, setPrefixItems] = useState([
     { label: '🇷🇴 +40', value: '+40' },
     { label: '🇲🇩 +373', value: '+373' },
-    { label: '🇺🇸 +1', value: '+1' },
-    { label: '🇬🇧 +44', value: '+44' },
-    { label: '🇩🇪 +49', value: '+49' },
-    { label: '🇫🇷 +33', value: '+33' },
-    { label: '🇮🇹 +39', value: '+39' },
-    { label: '🇪🇸 +34', value: '+34' },
-    { label: '🇨🇳 +86', value: '+86' },
-    { label: '🇮🇳 +91', value: '+91' }
   ]);
 
 
@@ -188,7 +180,7 @@ const SecondPage = ({ navigation, route }: any) => {
         style={styles.container}
         renderItem={({ item, index }) => (
           <View key={index} style={[styles.section, { zIndex: numberOfPeople - index }]}>
-            <Text style={styles.sectionTitle}>INFORMATII DESPRE CALATOR</Text>
+            <Text style={styles.sectionTitle}>Informații despre pasager</Text>
             <TextInput
               style={[styles.input, item.nameError ? styles.inputError : {}]}
               placeholder="Nume"
@@ -268,7 +260,7 @@ const SecondPage = ({ navigation, route }: any) => {
         )}
         ListFooterComponent={
           <>
-            <View style={styles.section}>
+            <View style={styles.sectionAcord}>
               <View style={styles.termsRow}>
                 <Checkbox
                   value={agreeToTerms}
@@ -284,7 +276,7 @@ const SecondPage = ({ navigation, route }: any) => {
               {agreeToTermsError && <Text style={styles.errorTextTerms}>Te rog sa accepti termenii si conditiile</Text>}
             </View>
             <TouchableOpacity style={styles.payButton} onPress={goToCheckout}>
-              <Text style={styles.payButtonText}>Continua</Text>
+              <Text style={styles.payButtonText}>Merg mai departe</Text>
             </TouchableOpacity>
           </>
         }
@@ -383,9 +375,24 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
+  sectionAcord: {
+    backgroundColor: '#FFFFFF', // white background for section
+    borderRadius: 12,
+    padding: 20,
+    marginHorizontal: 20,
+    marginBottom: 20,
+    shadowColor: '#000',
+    shadowOffset: {
+      width: 0,
+      height: 2,
+    },
+    shadowOpacity: 0.1, // more subtle shadow
+    shadowRadius: 2,
+    elevation: 3,
+  },
   sectionTitle: {
     fontSize: 25,
-    fontWeight: 'bold',
+    fontFamily: 'ClashGrotesk-Bold',
     color: '#333',
     marginBottom: 20,
     textAlign: 'center',
@@ -396,6 +403,7 @@ const styles = StyleSheet.create({
     padding: 10,
     borderRadius: 10,
     height: 50, 
+    fontFamily: 'ClashGrotesk-Regular', 
     marginTop: 20,
     fontSize: 16,
     color: 'black', // black text color
@@ -408,12 +416,14 @@ const styles = StyleSheet.create({
     color: 'red',
     fontSize: 12,
     marginTop: 2,
+    fontFamily: 'ClashGrotesk-Semibold', 
     marginLeft: 10,
   },
   errorTextTerms: {
     color: 'red',
     fontSize: 12,
     marginTop: 2,
+    fontFamily: 'ClashGrotesk-Semibold', 
     marginLeft: 20,
     marginRight: 20,
   }, 
@@ -441,6 +451,7 @@ const styles = StyleSheet.create({
   dropdownText: {
     fontSize: 16,
     color: 'black',
+    fontFamily: 'ClashGrotesk-Medium', 
   },
   phoneInput: {
     borderColor: '#ddd', // light grey border color
@@ -452,6 +463,7 @@ const styles = StyleSheet.create({
     paddingLeft: 10 ,
     fontSize: 16,
     color: 'black',
+    fontFamily: 'ClashGrotesk-Regular', 
     height:50, 
   },
   dropDownBox: {
@@ -460,20 +472,21 @@ const styles = StyleSheet.create({
   detailsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginBottom: 10,
+    marginBottom: 0,
     marginTop : 20, 
     borderRadius: 10,
   },
   detailsRoute: {
     fontSize: 18,
     color: '#333',
+    fontFamily: 'ClashGrotesk-Regular', 
     fontWeight: '500',
     marginLeft: 8,
   },
   termsRow: {
     flexDirection: 'row',
     alignItems: 'center',
-    marginHorizontal: 20,
+    marginHorizontal: 0,
   },
   payButton: {
     backgroundColor: '#1E90FF', // light blue background
@@ -492,8 +505,8 @@ const styles = StyleSheet.create({
     elevation: 3,
   },
   payButtonText: {
-    fontSize: 16,
-    fontWeight: 'bold',
-    color: '#fff', // white text color
+    fontSize: 20,
+    fontFamily: 'ClashGrotesk-Semibold', 
+    color: '#000', // white text color
   },
 });

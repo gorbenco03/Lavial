@@ -135,14 +135,14 @@ const FirstPage = ({ navigation }: any) => {
         <Text style={styles.headerText}>Călătorii comfortabile împreună cu noi!</Text>
         <View style={styles.inputRow}>
           <TouchableOpacity onPress={() => { setIsModalVisible(true); setSettingCityFor('from'); }} style={styles.modalTrigger}>
-            <Text>{from || 'Pornire de la '}</Text>
+            <Text style={styles.destination}>{from || 'Pornire de la '}</Text>
             <MaterialIcons name="arrow-drop-down" size={24} style={styles.dropdownIcon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={handleSwap}>
             <MaterialIcons name="swap-horiz" size={24} style={styles.swapIcon} />
           </TouchableOpacity>
           <TouchableOpacity onPress={() => { setIsModalVisible(true); setSettingCityFor('to'); }} style={styles.modalTrigger}>
-            <Text>{to || 'Destinație la '}</Text>
+            <Text style={styles.destination}>{to || 'Destinație la '}</Text>
             <MaterialIcons name="arrow-drop-down" size={24} style={styles.dropdownIcon} />
           </TouchableOpacity>
         </View>
@@ -185,7 +185,7 @@ const FirstPage = ({ navigation }: any) => {
           </TouchableOpacity>
         </View>
         <TouchableOpacity style={styles.searchButton} onPress={goToPersonalDetails}>
-          <Text style={styles.searchButtonText}>Continuă</Text>
+          <Text style={styles.searchButtonText}>Merg mai departe</Text>
         </TouchableOpacity>
       </View>
 
@@ -252,6 +252,8 @@ const styles = StyleSheet.create({
   },
   closeTextButton: {
     fontSize: 16,
+    fontFamily: 'ClashGrotesk-Semibold',
+   
   },
   datePickerContainer: {
     position: 'relative',
@@ -279,6 +281,7 @@ const styles = StyleSheet.create({
     fontSize: 24,
     fontWeight: 'bold',
     marginBottom: 20,
+    fontFamily: 'ClashGrotesk-Regular',
   },
   inputRow: {
     flexDirection: 'row',
@@ -290,6 +293,9 @@ const styles = StyleSheet.create({
     backgroundColor: 'white',
     borderRadius: 22,
   },
+  destination: {
+    fontFamily: 'ClashGrotesk-Regular',
+  }, 
   textInput: {
     flex: 1,
     borderWidth: 1,
@@ -312,6 +318,7 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 8,
     borderWidth: 1,
+    
     borderColor: '#ddd',
     borderRadius: 10,
     backgroundColor: '#E0E0E0', // fundal gri foarte deschis pentru date
@@ -319,10 +326,12 @@ const styles = StyleSheet.create({
   dateText: {
     fontSize: 16,
     color: "black",
+    fontFamily: 'ClashGrotesk-Regular', 
   },
   dateValue: {
     fontSize: 16,
     color: 'black',
+    fontFamily: 'ClashGrotesk-Regular', 
   },
   passengerPickerRow: {
     flexDirection: 'row',
@@ -336,11 +345,13 @@ const styles = StyleSheet.create({
   },
   passengerText: {
     flex: 1,
+    fontFamily: 'ClashGrotesk-Regular', 
     fontSize: 16,
     color: "#000"
   },
   iconButton: {
     padding: 10,
+    
     color: "black"
   },
   searchButton: {
@@ -365,12 +376,14 @@ const styles = StyleSheet.create({
   headerText: {
     textAlign: 'center', // Alinează textul în centru pe orizontală
     fontSize: 24, // sau orice dimensiune preferi
-    fontWeight: 'bold',
+   fontFamily : 'ClashGrotesk-Bold', 
     marginBottom: 10, // adaugă un spațiu vertical sus și jos pentru estetică
   },
   searchButtonText: {
     color: '#fff',
-    fontSize: 18,
+    fontFamily: 'ClashGrotesk-Semibold', 
+    fontSize : 20 ,
+  
     fontWeight: 'bold',
   },
   centeredView: {
@@ -384,6 +397,7 @@ const styles = StyleSheet.create({
     borderColor: '#ddd',
     borderRadius: 10,
     width: '40%',
+    fontFamily: 'ClashGrotesk-Semibold',
     padding: 10,
     backgroundColor: '#E0E0E0',
   },
@@ -412,6 +426,7 @@ const styles = StyleSheet.create({
     fontSize: 20, // Increased font size
     paddingVertical: 15, // Increased padding for a larger touch area
     borderBottomWidth: 1,
+    fontFamily: 'ClashGrotesk-Regular',
     borderBottomColor: '#ddd', // A light color for the separator
     flexDirection: 'row',
     alignItems: 'center',
@@ -421,6 +436,7 @@ const styles = StyleSheet.create({
     fontSize: 20, // Increased font size
     paddingBottom: 5, // Increased padding for a larger touch area
     flexDirection: 'row',
+    fontFamily: 'ClashGrotesk-Regular',
     alignItems: 'center',
     width: '100%',
   },
@@ -434,11 +450,13 @@ const styles = StyleSheet.create({
   modalText: {
     fontSize: 18, // Increased font size for modal texts
     color: '#000', // Text color as black
+    fontFamily: 'ClashGrotesk-Regular',
   },
   searchInput: {
     fontSize: 18, // Increased font size
     paddingVertical: 0, // Increased padding for a larger touch area
     flexDirection: 'row',
+    fontFamily: 'ClashGrotesk-Regular',
     alignItems: 'center',
     width: '100%',
   },

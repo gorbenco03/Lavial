@@ -3,6 +3,14 @@
     "name": "Lavial",
     "slug": "Lavial",
     "version": "1.0.0",
+    "plugins" : [
+      [
+        "expo-font", 
+        {
+          "fonts" : ["./assets/fonts/ClashGrotesk-Bold.otf", "./assets/fonts/ClashGrotesk-Extralight.otf", "./assets/fonts/ClashGrotesk-Light.otf", "./assets/fonts/ClashGrotesk-Medium.otf", "./assets/fonts/ClashGrotesk-Regular.otf", "./assets/fonts/ClashGrotesk-Semibold.otf" ]
+        }
+      ]
+    ], 
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
