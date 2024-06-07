@@ -11,6 +11,8 @@ import { StripeProvider } from '@stripe/stripe-react-native';
 import * as SplashScreen from 'expo-splash-screen';
 import { EXPO_STRIPE_PUBLISHABLE_KEY } from '@env';
 import { useFonts } from 'expo-font';
+import 'react-native-get-random-values';
+import { v4 as uuidv4 } from 'uuid';
 
 export interface Passenger {
   name: string;
