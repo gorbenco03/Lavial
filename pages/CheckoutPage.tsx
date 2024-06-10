@@ -134,7 +134,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     return passengers.reduce((total: number, passenger: Passenger) => {
       const basePrice = destinationPrices[`${from}-${to}`] || 0;
       let totalPrice = basePrice;
-
+      console.log(EXPO_STRIPE_PUBLISHABLE_KEY); 
       if (returnDate) {
         totalPrice += destinationPrices[`${to}-${from}`] || 0;
       }
