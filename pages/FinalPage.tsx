@@ -6,6 +6,7 @@ import { RootStackParamList, TravelDetailsType } from '../App';
 import { EXPO_SERVER_URL } from '@env';
 import 'react-native-get-random-values';
 import { v4 as uuidv4 } from 'uuid';
+import CryptoJS from 'crypto-js';
 
 type FinalProps = NativeStackScreenProps<RootStackParamList, 'Final'>;
 
@@ -68,9 +69,15 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
     }
   }, [travelDetails]);
 
+  const encryptData = (data: string) => {
+    const passphrase = 'back-end-lavial-encrypted-data'; // Ar trebui să folosești o parolă mai sigură
+    return CryptoJS.AES.encrypt(data, passphrase).toString();
+  };
+
   const sendDataToBackend = async (qrDataArray: string[], email: string) => {
     try {
-      const requestData = JSON.stringify({ qrData: qrDataArray, email });
+      const encryptedDataArray = qrDataArray.map(encryptData);
+      const requestData = JSON.stringify({ qrData: encryptedDataArray, email });
       console.log('Trimite către server:', requestData);
       const response = await fetch(`${EXPO_SERVER_URL}/send-qr`, {
         method: 'POST',

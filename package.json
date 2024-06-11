@@ -19,6 +19,7 @@
     "@stripe/stripe-react-native": "0.37.2",
     "base64-js": "^1.5.1",
     "checkbox": "^0.0.1",
+    "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
     "expo-calendar": "~13.0.4",
     "expo-camera": "^15.0.10",
@@ -58,6 +59,7 @@
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
+    "@types/crypto-js": "^4.2.2",
     "@types/node": "^20.12.12",
     "@types/react": "~18.2.79",
     "@types/react-native-dotenv": "^0.2.2",

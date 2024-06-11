@@ -43,7 +43,7 @@
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE"
       ],
-      "package": "com.yourapp.bundle"
+      "package": "com.lavialapp.bundle"
     },
     "web": {
       "favicon": "./assets/icon.png"
