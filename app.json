@@ -39,7 +39,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/ic_launcher_foreground.png",
         "backgroundColor": "#ffffff",
-        "versionCode" : 5
+        "versionCode": 2
       },
       "icon": "./assets/icon.png",
       "permissions": [
@@ -53,14 +53,8 @@
     },
     "extra": {
       "eas": {
-        "projectId": "381b83f1-efcf-4ec4-b0df-e45c8a2ca04f"
+        "projectId": "ba7a760e-a1fd-4332-913a-8342388e81ae"
       }
-    },
-    "runtimeVersion": {
-      "policy": "appVersion"
-    },
-    "updates": {
-      "url": "https://u.expo.dev/381b83f1-efcf-4ec4-b0df-e45c8a2ca04f"
     }
   }
 }
