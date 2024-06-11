@@ -2,15 +2,22 @@
   "expo": {
     "name": "Lavial",
     "slug": "Lavial",
-    "version": "1.0.1",
-    "plugins" : [
+    "version": "2.0.0",
+    "plugins": [
       [
-        "expo-font", 
+        "expo-font",
         {
-          "fonts" : ["./assets/fonts/ClashGrotesk-Bold.otf", "./assets/fonts/ClashGrotesk-Extralight.otf", "./assets/fonts/ClashGrotesk-Light.otf", "./assets/fonts/ClashGrotesk-Medium.otf", "./assets/fonts/ClashGrotesk-Regular.otf", "./assets/fonts/ClashGrotesk-Semibold.otf" ]
+          "fonts": [
+            "./assets/fonts/ClashGrotesk-Bold.otf",
+            "./assets/fonts/ClashGrotesk-Extralight.otf",
+            "./assets/fonts/ClashGrotesk-Light.otf",
+            "./assets/fonts/ClashGrotesk-Medium.otf",
+            "./assets/fonts/ClashGrotesk-Regular.otf",
+            "./assets/fonts/ClashGrotesk-Semibold.otf"
+          ]
         }
       ]
-    ], 
+    ],
     "orientation": "portrait",
     "icon": "./assets/icon.png",
     "userInterfaceStyle": "light",
@@ -31,7 +38,8 @@
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/ic_launcher_foreground.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#ffffff",
+        "versionCode" : 2
       },
       "icon": "./assets/icon.png",
       "permissions": [
@@ -47,6 +55,12 @@
       "eas": {
         "projectId": "381b83f1-efcf-4ec4-b0df-e45c8a2ca04f"
       }
+    },
+    "runtimeVersion": {
+      "policy": "appVersion"
+    },
+    "updates": {
+      "url": "https://u.expo.dev/381b83f1-efcf-4ec4-b0df-e45c8a2ca04f"
     }
   }
 }
