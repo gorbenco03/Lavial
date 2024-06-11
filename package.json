@@ -1,6 +1,6 @@
 {
   "name": "lavial",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "main": "node_modules/expo/AppEntry.js",
   "scripts": {
     "start": "expo start",
@@ -21,8 +21,6 @@
     "checkbox": "^0.0.1",
     "crypto-js": "^4.2.0",
     "dotenv": "^16.4.5",
-    "expo-calendar": "~13.0.4",
-    "expo-camera": "^15.0.10",
     "expo-checkbox": "~3.0.0",
     "expo-file-system": "~17.0.1",
     "expo-font": "^12.0.7",

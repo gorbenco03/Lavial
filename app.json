@@ -26,12 +26,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.yourapp.bundle",
-      "icon": "./assets/icon.png",
-      "infoPlist": {
-        "NSPhotoLibraryUsageDescription": "App needs access to photo library in order to save PDF",
-        "NSPhotoLibraryAddUsageDescription": "App needs access to photo library in order to save PDF",
-        "NSFileProviderDomainUsageDescription": "App needs access to files for PDF saving"
-      }
+      "icon": "./assets/icon.png"
     },
     "android": {
       "adaptiveIcon": {
@@ -43,7 +38,7 @@
         "WRITE_EXTERNAL_STORAGE",
         "READ_EXTERNAL_STORAGE"
       ],
-      "package": "com.lavialapp.bundle"
+      "package": "com.yourapp.bundle"
     },
     "web": {
       "favicon": "./assets/icon.png"
