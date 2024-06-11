@@ -39,7 +39,7 @@
       "adaptiveIcon": {
         "foregroundImage": "./assets/ic_launcher_foreground.png",
         "backgroundColor": "#ffffff",
-        "versionCode" : 2
+        "versionCode" : 5
       },
       "icon": "./assets/icon.png",
       "permissions": [
