@@ -28,13 +28,12 @@ const FirstPage = ({ navigation }: any) => {
   const [filteredCities, setFilteredCities] = useState<string[]>(cities);
 
   const handleSwap = () => {
-    // Schimbăm valorile dintre orașul de plecare și cel de destinație
     const temp = from;
     setFrom(to);
     setTo(temp);
   };
+
   const goToPersonalDetails = () => {
-    // Verificăm dacă informațiile sunt completate înainte de a naviga
     if (isValid()) {
       navigation.navigate('Detalii', {
         from: from,
@@ -44,10 +43,10 @@ const FirstPage = ({ navigation }: any) => {
         numberOfPeople: numberOfPeople,
       });
     } else {
-      // Altfel, afișăm o alertă sau mesaj pentru a completa informațiile necesare
       Alert.alert("Ai grija", "Te rog completează toate câmpurile pentru a continua.");
     }
   };
+
   const formatDate = (date: any) => {
     return new Intl.DateTimeFormat('ro-RO', {
       day: '2-digit',
@@ -55,12 +54,12 @@ const FirstPage = ({ navigation }: any) => {
       year: 'numeric'
     }).format(date);
   };
+
   const handleDatePress = (dateType: 'outbound' | 'return') => {
     if (dateType === 'return' && !outboundDate) {
       Alert.alert("Atenție", "Selectați mai întâi data de plecare.");
-      return; // Exit if there's no outbound date yet
+      return;
     }
-
     setCurrentSelectingDate(dateType);
     setIsDatePickerVisible(true);
 
@@ -70,10 +69,10 @@ const FirstPage = ({ navigation }: any) => {
       setDate(returnDate ? returnDate.toISOString().split('T')[0] : minDateForReturn);
     }
   };
+
   const setCity = (city: string) => {
     if (settingCityFor === 'from') {
       setFrom(city);
-      // Reset the destination city if the same city is selected or not appropriate
       if (city === to || (city !== 'Chișinău' && to !== 'Chișinău')) {
         setTo('');
       }
@@ -85,22 +84,23 @@ const FirstPage = ({ navigation }: any) => {
       }
     }
   };
-  
+
   const onDateChange = (selectedDate: string) => {
     const newDate = new Date(selectedDate.replace(/\//g, '-'));
     if (currentSelectingDate === 'outbound') {
       setOutboundDate(newDate);
       const nextDay = new Date(newDate);
-      nextDay.setDate(newDate.getDate() + 1); // Increment day by one for return date minimum
+      nextDay.setDate(newDate.getDate() + 1);
       setMinDateForReturn(nextDay.toISOString().split('T')[0]);
       if (returnDate && returnDate < nextDay) {
-        setReturnDate(undefined); // Reset if return date is before new minimum
+        setReturnDate(undefined);
       }
     } else {
       setReturnDate(newDate);
     }
     setIsDatePickerVisible(false);
   };
+
   const updateSearch = (query: string) => {
     const lowercaseQuery = query.toLowerCase();
     setSearchQuery(lowercaseQuery);
@@ -111,23 +111,20 @@ const FirstPage = ({ navigation }: any) => {
     const filtered = filteredCities.filter(city => city.toLowerCase().includes(lowercaseQuery));
     setFilteredCities(filtered);
   };
-  
+
   const updateFilteredCities = () => {
     if (from === 'Chișinău') {
-      // Exclude 'Chișinău' from destinations
       setFilteredCities(cities.filter(city => city !== 'Chișinău'));
     } else if (from) {
-      // Only 'Chișinău' is available as destination
       setFilteredCities(['Chișinău']);
     } else {
-      // Reset to all cities if no from city is selected
       setFilteredCities(cities);
     }
   };
-  
+
   useEffect(() => {
     updateFilteredCities();
-  }, [from]); // Re-run when 'from' changes
+  }, [from]);
 
   return (
     <ScrollView style={styles.container}>
@@ -149,14 +146,24 @@ const FirstPage = ({ navigation }: any) => {
         <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('outbound')}>
           <Text style={styles.dateText}>Tur</Text>
           <Text style={styles.dateValue}>{outboundDate ? formatDate(outboundDate) : 'Selectează data'}</Text>
+          {outboundDate && (
+            <TouchableOpacity onPress={() => setOutboundDate(undefined)}>
+              <MaterialIcons name="close" size={16}  />
+            </TouchableOpacity>
+          )}
         </TouchableOpacity>
         <TouchableOpacity
-          style={[styles.dateRow, { backgroundColor: outboundDate ? '#E0E0E0' : '#F5F5F5' }]}
+          style={[styles.dateRow, { backgroundColor: outboundDate ? '#E0E0E0' : '#F5F5Ftyle={styles.clearIcon}5' }]}
           onPress={() => handleDatePress('return')}
           disabled={!outboundDate}
         >
           <Text style={styles.dateText}>Retur</Text>
           <Text style={styles.dateValue}>{returnDate ? formatDate(returnDate) : ''}</Text>
+          {returnDate && (
+            <TouchableOpacity onPress={() => setReturnDate(undefined)}>
+              <MaterialIcons name="close" size={16}  />
+            </TouchableOpacity>
+          )}
         </TouchableOpacity>
 
         {isDatePickerVisible && (
@@ -180,7 +187,7 @@ const FirstPage = ({ navigation }: any) => {
           <TouchableOpacity onPress={() => setNumberOfPeople(Math.max(1, numberOfPeople - 1))}>
             <MaterialIcons name="remove" size={24} style={styles.iconButton} />
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => setNumberOfPeople(numberOfPeople + 1)}>
+          <TouchableOpacity onPress={() => setNumberOfPeople(Math.min(10, numberOfPeople + 1))}>
             <MaterialIcons name="add" size={24} style={styles.iconButton} />
           </TouchableOpacity>
         </View>
@@ -228,6 +235,7 @@ const FirstPage = ({ navigation }: any) => {
   );
 };
 export default FirstPage;
+
 
 const styles = StyleSheet.create({
   container: {

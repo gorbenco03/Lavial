@@ -62,8 +62,8 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
         paymentIntentClientSecret: paymentIntent,
         returnURL: `${EXPO_STRIPE_RETURN_URL}`,
         defaultBillingDetails: {
-          name: 'Chiril Gorbenco',
-          email: 'chiril.gorbenco@icloud.com',
+          name: '',
+          email: '',
         }
       });
   

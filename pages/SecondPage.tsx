@@ -186,6 +186,7 @@ const SecondPage = ({ navigation, route }: any) => {
               placeholder="Nume"
               onChangeText={(text) => setPassengerField(index, 'name', text)}
               value={item.name}
+              maxLength={20}
             />
             {item.nameError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
             <TextInput
@@ -193,6 +194,7 @@ const SecondPage = ({ navigation, route }: any) => {
               placeholder="Prenume"
               onChangeText={(text) => setPassengerField(index, 'surname', text)}
               value={item.surname}
+              maxLength={20}
             />
             {item.surnameError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
             <TextInput
@@ -200,6 +202,7 @@ const SecondPage = ({ navigation, route }: any) => {
               placeholder="Email"
               onChangeText={(text) => setPassengerField(index, 'email', text)}
               value={item.email}
+              maxLength={30}
             />
             {item.emailError && <Text style={styles.errorText}>Format email invalid</Text>}
             <View style={styles.phoneRow}>
@@ -238,6 +241,7 @@ const SecondPage = ({ navigation, route }: any) => {
               placeholder="Seria Pasaport"
               onChangeText={(text) => setPassengerField(index, 'passportSerial', text)}
               value={item.passportSerial}
+              maxLength={12}
             />
             {item.passportSerialError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
             <View style={styles.detailsRow}>
@@ -253,6 +257,7 @@ const SecondPage = ({ navigation, route }: any) => {
                 placeholder="Seria legitimatiei de student"
                 onChangeText={(text) => setPassengerField(index, 'studentIdSerial', text)}
                 value={item.studentIdSerial}
+                maxLength={12}
               />
             )}
             {item.isStudent && item.studentIdSerialError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
@@ -269,9 +274,13 @@ const SecondPage = ({ navigation, route }: any) => {
                     if (value) setAgreeToTermsError(false);
                   }}
                 />
-                <TouchableOpacity onPress={() => setModalVisible(true)}>
-                  <Text style={styles.detailsRoute}>Sunt de acord cu prelucrarea datelor cu caracter personal</Text>
-                </TouchableOpacity>
+               <TouchableOpacity onPress={() => setModalVisible(true)}>
+  <Text style={styles.detailsRoute}>
+    Sunt de acord cu prelucrarea  
+    <Text style={styles.underlineText}> datelor cu caracter personal</Text>
+  </Text>
+</TouchableOpacity>
+
               </View>
               {agreeToTermsError && <Text style={styles.errorTextTerms}>Te rog sa accepti termenii si conditiile</Text>}
             </View>
@@ -508,5 +517,8 @@ const styles = StyleSheet.create({
     fontSize: 20,
     fontFamily: 'ClashGrotesk-Semibold', 
     color: '#000', // white text color
+  },
+  underlineText: {
+    textDecorationLine: 'underline',
   },
 });
