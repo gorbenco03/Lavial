@@ -17,7 +17,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     try {
       console.log('Fetching payment sheet params...');
       const totalAmount = calculateTotalPrice() * 100;
-      const response = await fetch(`${EXPO_SERVER_URL}/payment-sheet`, {
+      const response = await fetch(`https://lavial.icu/payment-sheet`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -297,7 +297,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   return (
     <StripeProvider
-      publishableKey={EXPO_STRIPE_PUBLISHABLE_KEY}
+      publishableKey="pk_live_51OFFW7L6XuzedjFNJe7O04UUU8PXg1c5OWpkH7Yui9Jork2L3OmwozH02dZZZFAW06csaHwhVpTWLXnhallwuWpX004LqvSxK5"
       urlScheme={EXPO_STRIPE_RETURN_URL}
     >
       <ScrollView style={styles.container}>
