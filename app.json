@@ -32,7 +32,7 @@
     ],
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.yourapp.bundle",
+      "bundleIdentifier": "com.lavial.bundle",
       "icon": "./assets/icon.png"
     },
     "android": {
@@ -47,7 +47,7 @@
         "READ_EXTERNAL_STORAGE"
       ],
       "package": "com.yourapp.bundle",
-      "versionCode": 10
+      "versionCode": 11
     },
     "web": {
       "favicon": "./assets/icon.png"
