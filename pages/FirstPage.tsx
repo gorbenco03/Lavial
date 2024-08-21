@@ -9,7 +9,7 @@ const cities = [
   'Brașov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
 ]; 
 
-const FirstPage = ({ navigation }: any) => {
+const FirstPage = ({ navigation } : any ) => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [outboundDate, setOutboundDate] = useState<Date | undefined>(undefined);
@@ -20,12 +20,12 @@ const FirstPage = ({ navigation }: any) => {
   const [date, setDate] = useState<string>();
   const [currentSelectingDate, setCurrentSelectingDate] = useState<'outbound' | 'return'>('outbound');
   const [numberOfPeople, setNumberOfPeople] = useState(1);
-  const isValid = () => from !== '' && to !== '' && outboundDate;
   const [settingCityFor, setSettingCityFor] = useState<'from' | 'to'>();
-  const datePickerPosition = useRef(0);  // Start with 0 or any default suitable for your layout
-  const today = getToday();
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredCities, setFilteredCities] = useState<string[]>(cities);
+  const today = getToday();
+
+  const isValid = () => from !== '' && to !== '' && outboundDate;
 
   const handleSwap = () => {
     const temp = from;
@@ -33,10 +33,18 @@ const FirstPage = ({ navigation }: any) => {
     setTo(temp);
   };
 
+  const handleReset = () => {
+    setFrom('');
+    setTo('');
+    setOutboundDate(undefined);
+    setReturnDate(undefined);
+    setNumberOfPeople(1);
+  };
+
   const goToPersonalDetails = async () => {
     if (isValid()) {
         try {
-            const response = await fetch('https://lavial.icu/check-reservation-status', {
+            const response = await fetch('http://localhost:3000/check-reservation-status', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -63,7 +71,7 @@ const FirstPage = ({ navigation }: any) => {
     } else {
         Alert.alert("Ai grijă", "Te rog completează toate câmpurile pentru a continua.");
     }
-};
+  };
 
   const formatDate = (date: any) => {
     return new Intl.DateTimeFormat('ro-RO', {
@@ -132,11 +140,11 @@ const FirstPage = ({ navigation }: any) => {
 
   const updateFilteredCities = () => {
     if (from === 'Chișinău') {
-      setFilteredCities(cities.filter(city => city !== 'Chișinău'));
-    } else if (from) {
-      setFilteredCities(['Chișinău']);
+        setFilteredCities(cities.filter(city => city !== 'Chișinău'));
+    } else if (from && cities.includes(from)) {
+        setFilteredCities(cities.filter(city => city !== from));
     } else {
-      setFilteredCities(cities);
+        setFilteredCities(cities);
     }
   };
 
@@ -161,17 +169,26 @@ const FirstPage = ({ navigation }: any) => {
             <MaterialIcons name="arrow-drop-down" size={24} style={styles.dropdownIcon} />
           </TouchableOpacity>
         </View>
+
+        {/* Conditionally render the Reset Button */}
+        {(from || to) && (
+          <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
+            <Text style={styles.resetButtonText}>Resetează</Text>
+          </TouchableOpacity>
+        )}
+
         <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('outbound')}>
           <Text style={styles.dateText}>Tur</Text>
           <Text style={styles.dateValue}>{outboundDate ? formatDate(outboundDate) : 'Selectează data'}</Text>
           {outboundDate && (
             <TouchableOpacity onPress={() => setOutboundDate(undefined)}>
-              <MaterialIcons name="close" size={16}  />
+              <MaterialIcons name="close" size={16} />
             </TouchableOpacity>
           )}
         </TouchableOpacity>
+
         <TouchableOpacity
-          style={[styles.dateRow, { backgroundColor: outboundDate ? '#E0E0E0' : '#F5F5Ftyle={styles.clearIcon}5' }]}
+          style={[styles.dateRow, { backgroundColor: outboundDate ? '#E0E0E0' : '#F5F5F5' }]}
           onPress={() => handleDatePress('return')}
           disabled={!outboundDate}
         >
@@ -179,17 +196,17 @@ const FirstPage = ({ navigation }: any) => {
           <Text style={styles.dateValue}>{returnDate ? formatDate(returnDate) : ''}</Text>
           {returnDate && (
             <TouchableOpacity onPress={() => setReturnDate(undefined)}>
-              <MaterialIcons name="close" size={16}  />
+              <MaterialIcons name="close" size={16} />
             </TouchableOpacity>
           )}
         </TouchableOpacity>
 
         {isDatePickerVisible && (
-          <View style={[styles.datePickerContainer, { top: datePickerPosition.current }]}>
+          <View style={[styles.datePickerContainer, { top: 0 }]}>
             <DatePicker
               mode='calendar'
               selected={date}
-              style={styles.CalendarStyle}
+              
               minimumDate={currentSelectingDate === 'return' ? minDateForReturn : getToday()}
               onDateChange={onDateChange}
             />
@@ -209,6 +226,7 @@ const FirstPage = ({ navigation }: any) => {
             <MaterialIcons name="add" size={24} style={styles.iconButton} />
           </TouchableOpacity>
         </View>
+
         <TouchableOpacity style={styles.searchButton} onPress={goToPersonalDetails}>
           <Text style={styles.searchButtonText}>Merg mai departe</Text>
         </TouchableOpacity>
@@ -252,22 +270,22 @@ const FirstPage = ({ navigation }: any) => {
     </ScrollView>
   );
 };
-export default FirstPage;
 
+export default FirstPage;
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F0F0', // fundal gri deschis
-    paddingVertical: 20, // adaugă padding vertical
+    backgroundColor: '#F0F0F0',
+    paddingVertical: 20,
   },
   form: {
-    backgroundColor: '#FFFFFF', // fundal alb pentru formular
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 20,
     marginHorizontal: 20,
     marginBottom: 20,
-    shadowColor: '#000', // umbra
+    shadowColor: '#000',
     shadowOffset: {
       width: 0,
       height: 2,
@@ -276,19 +294,21 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  closeTextButton: {
-    fontSize: 16,
-    fontFamily: 'ClashGrotesk-Semibold',
-   
+  resetButton: {
+    backgroundColor: '#FF6347',
+    borderRadius: 10,
+    padding: 10,
+    marginHorizontal: 0,
+    marginTop: 10,
+    alignItems: 'center',
   },
-  datePickerContainer: {
-    position: 'relative',
-    backgroundColor: 'white',
-    borderRadius: 22,
-    marginVertical: 10,
+  resetButtonText: {
+    color: '#fff',
+    fontSize: 18,
+    fontWeight: 'bold',
   },
   closeButton: {
-    backgroundColor: '#1E90FF', // fundal albastru deschis
+    backgroundColor: '#1E90FF',
     borderRadius: 10,
     padding: 5,
     marginHorizontal: 100,
@@ -303,38 +323,16 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  formLabel: {
+  headerText: {
+    textAlign: 'center',
     fontSize: 24,
-    fontWeight: 'bold',
-    marginBottom: 20,
-    fontFamily: 'ClashGrotesk-Regular',
+    fontFamily: 'ClashGrotesk-Bold',
+    marginBottom: 10,
   },
   inputRow: {
     flexDirection: 'row',
     alignItems: 'center',
     justifyContent: 'space-between',
-    marginBottom: 20,
-  },
-  CalendarStyle: {
-    backgroundColor: 'white',
-    borderRadius: 22,
-  },
-  destination: {
-    fontFamily: 'ClashGrotesk-Regular',
-  }, 
-  textInput: {
-    flex: 1,
-    borderWidth: 1,
-    borderColor: '#ddd',
-    padding: 10,
-    marginHorizontal: 5,
-    borderRadius: 5,
-  },
-  swapIcon: {
-    paddingHorizontal: 10,
-    color: "black",
-  },
-  datePickerRow: {
     marginBottom: 20,
   },
   dateRow: {
@@ -344,10 +342,9 @@ const styles = StyleSheet.create({
     padding: 15,
     marginVertical: 8,
     borderWidth: 1,
-    
     borderColor: '#ddd',
     borderRadius: 10,
-    backgroundColor: '#E0E0E0', // fundal gri foarte deschis pentru date
+    backgroundColor: '#E0E0E0',
   },
   dateText: {
     fontSize: 16,
@@ -358,6 +355,22 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: 'black',
     fontFamily: 'ClashGrotesk-Regular', 
+  },
+  dropdownIcon: {
+    marginLeft: 'auto',
+  },
+  swapIcon: {
+    paddingHorizontal: 10,
+    color: "black",
+  },
+  destination: {
+    fontFamily: 'ClashGrotesk-Regular',
+  },
+  datePickerContainer: {
+    position: 'relative',
+    backgroundColor: 'white',
+    borderRadius: 22,
+    marginVertical: 10,
   },
   passengerPickerRow: {
     flexDirection: 'row',
@@ -377,11 +390,10 @@ const styles = StyleSheet.create({
   },
   iconButton: {
     padding: 10,
-    
     color: "black"
   },
   searchButton: {
-    backgroundColor: '#1E90FF', // fundal albastru deschis
+    backgroundColor: '#1E90FF',
     borderRadius: 10,
     padding: 20,
     marginHorizontal: 0,
@@ -396,20 +408,10 @@ const styles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 3,
   },
-  dropdownIcon: {
-    marginLeft: 'auto',
-  },
-  headerText: {
-    textAlign: 'center', // Alinează textul în centru pe orizontală
-    fontSize: 24, // sau orice dimensiune preferi
-   fontFamily : 'ClashGrotesk-Bold', 
-    marginBottom: 10, // adaugă un spațiu vertical sus și jos pentru estetică
-  },
   searchButtonText: {
     color: '#fff',
     fontFamily: 'ClashGrotesk-Semibold', 
     fontSize : 20 ,
-  
     fontWeight: 'bold',
   },
   centeredView: {
@@ -434,14 +436,14 @@ const styles = StyleSheet.create({
     zIndex: 1,
   },
   modalView: {
-    width: '100%', // Full width to match the screen
+    width: '100%',
     height: '70%',
-    backgroundColor: 'white', // Keeping it light as per your original design
-    borderTopRightRadius: 20, // Only top corners are rounded
+    backgroundColor: 'white',
+    borderTopRightRadius: 20,
     borderTopLeftRadius: 20,
     borderRadius: 20,
     padding: 20,
-    justifyContent: 'flex-start', // Align items to the top
+    justifyContent: 'flex-start',
     shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
     shadowOpacity: 0.25,
@@ -449,47 +451,41 @@ const styles = StyleSheet.create({
     elevation: 5,
   },
   modalItem: {
-    fontSize: 20, // Increased font size
-    paddingVertical: 15, // Increased padding for a larger touch area
+    fontSize: 20,
+    paddingVertical: 15,
     borderBottomWidth: 1,
     fontFamily: 'ClashGrotesk-Regular',
-    borderBottomColor: '#ddd', // A light color for the separator
+    borderBottomColor: '#ddd',
     flexDirection: 'row',
     alignItems: 'center',
     width: '100%',
   },
   modalItemSearch: {
-    fontSize: 20, // Increased font size
-    paddingBottom: 5, // Increased padding for a larger touch area
+    fontSize: 20,
+    paddingBottom: 5,
     flexDirection: 'row',
     fontFamily: 'ClashGrotesk-Regular',
     alignItems: 'center',
     width: '100%',
   },
   cityIcon: {
-    marginRight: 15, // Added some space between the icon and the text
-    color: '#000', // Icon color as black
+    marginRight: 15,
+    color: '#000',
   },
   closeModalButton: {
-    alignSelf: 'flex-end', // Align close button to the right
+    alignSelf: 'flex-end',
   },
   modalText: {
-    fontSize: 18, // Increased font size for modal texts
-    color: '#000', // Text color as black
+    fontSize: 18,
+    color: '#000',
     fontFamily: 'ClashGrotesk-Regular',
   },
   searchInput: {
-    fontSize: 18, // Increased font size
-    paddingVertical: 0, // Increased padding for a larger touch area
+    fontSize: 18,
+    paddingVertical: 0,
     flexDirection: 'row',
     fontFamily: 'ClashGrotesk-Regular',
     alignItems: 'center',
     width: '100%',
-  },
-  searchIcon: {
-    position: 'absolute',
-    left: 10,
-    top: 10,
-    color: '#fff', // Icon color to be visible on dark bg
   },
 });
