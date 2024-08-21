@@ -33,19 +33,37 @@ const FirstPage = ({ navigation }: any) => {
     setTo(temp);
   };
 
-  const goToPersonalDetails = () => {
+  const goToPersonalDetails = async () => {
     if (isValid()) {
-      navigation.navigate('Detalii', {
-        from: from,
-        to: to,
-        outboundDate: outboundDate?.toDateString(),
-        returnDate: returnDate?.toDateString(),
-        numberOfPeople: numberOfPeople,
-      });
+        try {
+            const response = await fetch('https://lavial.icu/check-reservation-status', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ date: outboundDate }),
+            });
+            const data = await response.json();
+
+            if (data.stopped) {
+                Alert.alert("Rezervări oprite", "Rezervările sunt oprite pentru data selectată. Te rugăm să alegi o altă dată.");
+            } else {
+                navigation.navigate('Detalii', {
+                    from: from,
+                    to: to,
+                    outboundDate: outboundDate?.toDateString(),
+                    returnDate: returnDate?.toDateString(),
+                    numberOfPeople: numberOfPeople,
+                });
+            }
+        } catch (error) {
+            console.error('Error checking reservation status:', error);
+            Alert.alert("Eroare", "A apărut o eroare la verificarea statusului rezervărilor.");
+        }
     } else {
-      Alert.alert("Ai grija", "Te rog completează toate câmpurile pentru a continua.");
+        Alert.alert("Ai grijă", "Te rog completează toate câmpurile pentru a continua.");
     }
-  };
+};
 
   const formatDate = (date: any) => {
     return new Intl.DateTimeFormat('ro-RO', {

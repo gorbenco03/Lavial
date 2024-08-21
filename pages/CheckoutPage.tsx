@@ -4,19 +4,49 @@ import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
 import { RootStackParamList, TravelDetailsType, Passenger, TravelDetails } from '../App'; 
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
-import {EXPO_STRIPE_PUBLISHABLE_KEY, EXPO_STRIPE_RETURN_URL , EXPO_SERVER_URL } from '@env'
+import { EXPO_STRIPE_PUBLISHABLE_KEY, EXPO_STRIPE_RETURN_URL, EXPO_SERVER_URL } from '@env';
+
 type CheckoutProps = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
 const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
   const [loading, setLoading] = useState(false);
+  const [routePrice, setRoutePrice] = useState<number>(0);
+  const [totalPrice, setTotalPrice] = useState<number>(0);
 
   const { from, to, outboundDate, returnDate, passengers } = route.params;
 
+  const fetchPrice = async () => {
+    try {
+      const response = await fetch(`${EXPO_SERVER_URL}/get-price`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          from,
+          to,
+          returnDate,
+          passengers,
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to fetch price');
+      }
+
+      const { routePrice, totalPriceWithFee } = await response.json();
+      setRoutePrice(routePrice);
+      setTotalPrice(totalPriceWithFee);
+    } catch (error) {
+      console.error('Error fetching price:', error);
+      Alert.alert('Error', 'Could not fetch price. Please try again.');
+    }
+  };
+
   const fetchPaymentSheetParams = async () => {
     try {
-      console.log('Fetching payment sheet params...');
-      const totalAmount = calculateTotalPrice() * 100;
+      const totalAmount = totalPrice * 100;
       const response = await fetch(`${EXPO_SERVER_URL}/payment-sheet`, {
         method: 'POST',
         headers: {
@@ -25,7 +55,6 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
         body: JSON.stringify({ totalAmount }),
       });
   
-      console.log('Response status:', response.status);
       if (!response.ok) {
         throw new Error('Failed to fetch payment sheet params');
       }
@@ -47,9 +76,6 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       throw error;
     }
   };
-  
-  
-  
   
   const initializePaymentSheet = async () => {
     try {
@@ -77,12 +103,11 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       console.error('Error in initializePaymentSheet:', error);
     }
   };
-  
 
   useEffect(() => {
+    fetchPrice();
     initializePaymentSheet();
-   
-  }, [from, to, returnDate]);
+  }, [from, to, returnDate, passengers]);
 
   const openPaymentSheet = async () => {
     const { error } = await presentPaymentSheet();
@@ -92,62 +117,6 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     } else {
       navigateToFinalPage();
     }
-  };
-
-  const studentDiscounts: Record<string, number> = {
-    "Chișinău-Timișoara": 50,
-    "Timișoara-Chișinău": 50,
-    "Chișinău-Deva": 45,
-    "Deva-Chișinău": 45,
-    "Chișinău-Sibiu": 35,
-    "Sibiu-Chișinău": 35,
-    "Chișinău-Alba Iulia": 40,
-    "Alba Iulia-Chișinău": 40,
-    "Chișinău-Brașov": 25,
-    "Brașov-Chișinău": 25,
-  };
-
-  const destinationPrices: Record<string, number> = {
-    "Chișinău-Timișoara": 200,
-    "Chișinău-Deva": 175,
-    "Chișinău-Sibiu": 140,
-    "Chișinău-Alba Iulia": 150,
-    "Chișinău-Brașov": 125,
-    "Chișinău-Onești": 90,
-    "Chișinău-Adjud": 75,
-    "Chișinău-Tecuci": 75,
-    "Chișinău-Bârlad": 50,
-    "Chișinău-Huși": 50,
-    "Chișinău-Lugoj": 200,
-  };
-
-  // Ensure reverse direction has the same prices
-  Object.keys(destinationPrices).forEach(key => {
-    const [start, end] = key.split('-');
-    const reverseKey = `${end}-${start}`;
-    if (!destinationPrices[reverseKey]) {
-      destinationPrices[reverseKey] = destinationPrices[key];
-    }
-  });
-
-  const calculateTotalPrice = () => {
-    return passengers.reduce((total: number, passenger: Passenger) => {
-      const basePrice = destinationPrices[`${from}-${to}`] || 0;
-      let totalPrice = basePrice;
-      // console.log(EXPO_STRIPE_PUBLISHABLE_KEY); 
-      if (returnDate) {
-        totalPrice += destinationPrices[`${to}-${from}`] || 0;
-      }
-
-      if (passenger.isStudent) {
-        totalPrice -= studentDiscounts[`${from}-${to}`] || 0;
-        if (returnDate) {
-          totalPrice -= studentDiscounts[`${to}-${from}`] || 0;
-        }
-      }
-
-      return total + totalPrice;
-    }, 0);
   };
 
   const navigateToFinalPage = () => {
@@ -280,24 +249,24 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       to: detail.from,
       toStation: detail.fromStation,
       departureTime: getReturnDepartureTime(detail.to),
-      arrivalTime: '07:00', // Assuming the return arrival time is the same
+      arrivalTime: detail.departureTime, // Assuming the return arrival time is the same
     };
     timeAndPlace.push(reverseDetail);
   });
+
+  const uniqueTimeAndPlace = Array.from(new Set(timeAndPlace.map(a => JSON.stringify(a)))).map(a => JSON.parse(a));
 
   const getTravelDetails = (from: string, to: string): TravelDetails | undefined => {
     const details = uniqueTimeAndPlace.find((details) => details.from === from && details.to === to);
     return details;
   };
 
-  const uniqueTimeAndPlace = Array.from(new Set(timeAndPlace.map(a => JSON.stringify(a)))).map(a => JSON.parse(a));
-
   const travelDetailsOutbound = getTravelDetails(from, to);
   const travelDetailsReturn = returnDate ? getTravelDetails(to, from) : undefined;
 
   return (
     <StripeProvider
-      publishableKey={EXPO_STRIPE_PUBLISHABLE_KEY}
+      publishableKey="pk_live_51OFFW7L6XuzedjFNJe7O04UUU8PXg1c5OWpkH7Yui9Jork2L3OmwozH02dZZZFAW06csaHwhVpTWLXnhallwuWpX004LqvSxK5"
       urlScheme={EXPO_STRIPE_RETURN_URL}
     >
       <ScrollView style={styles.container}>
@@ -393,8 +362,25 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
         ))}
         
         <View style={styles.totalSection}>
+          <Text style={styles.totalTitle}>Preț inițial</Text>
+          <Text style={styles.totalPrice}>RON {routePrice}</Text>
+        </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Taxe suplimentare</Text>
+          <View style={styles.detailsRow}>
+            <FontAwesome name="info-circle" size={18} color="#333" />
+            <Text style={styles.detailsExtras}>Taxă Stripe (2.9%)</Text>
+          </View>
+          <View style={styles.detailsRow}>
+            <FontAwesome name="info-circle" size={18} color="#333" />
+            <Text style={styles.detailsExtras}>Taxă fixă: RON 1.3</Text>
+          </View>
+        </View>
+
+        <View style={styles.totalSection}>
           <Text style={styles.totalTitle}>Total de plată</Text>
-          <Text style={styles.totalPrice}>RON {calculateTotalPrice()}</Text>
+          <Text style={styles.totalPrice}>RON {totalPrice}</Text>
         </View>
         
         <TouchableOpacity style={styles.payButton} disabled={!loading} onPress={openPaymentSheet}>
