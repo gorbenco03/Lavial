@@ -44,7 +44,7 @@ const FirstPage = ({ navigation } : any ) => {
   const goToPersonalDetails = async () => {
     if (isValid()) {
         try {
-            const response = await fetch('http://localhost:3000/check-reservation-status', {
+            const response = await fetch('https://lavial.icu/check-reservation-status', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
