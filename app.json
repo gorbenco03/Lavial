@@ -33,7 +33,8 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.lavial.bundle",
-      "icon": "./assets/icon.png"
+      "icon": "./assets/icon.png",
+      "buildNumber": "2"
     },
     "android": {
       "adaptiveIcon": {
