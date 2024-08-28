@@ -1,15 +1,15 @@
-import React, { useState, useRef, useEffect } from 'react';
+import React, { useState, useEffect } from 'react';
 import { StyleSheet, View, Text, Modal, FlatList, TouchableOpacity, ScrollView, Alert, TextInput } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import DatePicker from 'react-native-modern-datepicker';
-import { getToday, getFormatedDate } from "react-native-modern-datepicker";
+import { getToday } from "react-native-modern-datepicker";
 
 const cities = [
   'Chișinău', 'Huși', 'Tecuci', 'Adjud', 'Onești',
   'Brașov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
 ]; 
 
-const FirstPage = ({ navigation } : any ) => {
+const FirstPage = ({ navigation } : any) => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [outboundDate, setOutboundDate] = useState<Date | undefined>(undefined);
@@ -44,17 +44,17 @@ const FirstPage = ({ navigation } : any ) => {
   const goToPersonalDetails = async () => {
     if (isValid()) {
         try {
-            const response = await fetch('https://lavial.icu/check-reservation-status', {
+            const response = await fetch('https://lavial.icu/get-price', {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
                 },
-                body: JSON.stringify({ date: outboundDate }),
+                body: JSON.stringify({ from, to }),
             });
             const data = await response.json();
 
-            if (data.stopped) {
-                Alert.alert("Rezervări oprite", "Rezervările sunt oprite pentru data selectată. Te rugăm să alegi o altă dată.");
+            if (data.routePrice === 0) {
+                Alert.alert("Eroare", "Această rută nu este disponibilă.");
             } else {
                 navigation.navigate('Detalii', {
                     from: from,
@@ -65,8 +65,8 @@ const FirstPage = ({ navigation } : any ) => {
                 });
             }
         } catch (error) {
-            console.error('Error checking reservation status:', error);
-            Alert.alert("Eroare", "A apărut o eroare la verificarea statusului rezervărilor.");
+            console.error('Error fetching price:', error);
+            Alert.alert("Eroare", "A apărut o eroare la verificarea prețului rutei.");
         }
     } else {
         Alert.alert("Ai grijă", "Te rog completează toate câmpurile pentru a continua.");
@@ -138,11 +138,21 @@ const FirstPage = ({ navigation } : any ) => {
     setFilteredCities(filtered);
   };
 
-  const updateFilteredCities = () => {
-    if (from === 'Chișinău') {
-        setFilteredCities(cities.filter(city => city !== 'Chișinău'));
-    } else if (from && cities.includes(from)) {
-        setFilteredCities(cities.filter(city => city !== from));
+  const updateFilteredCities = async () => {
+    if (from) {
+        try {
+            const response = await fetch('https://lavial.icu/get-routes');
+            const routes = await response.json();
+
+            if (routes[from]) {
+                setFilteredCities(routes[from]);
+            } else {
+                setFilteredCities([]);
+            }
+        } catch (error) {
+            console.error('Error fetching routes:', error);
+            setFilteredCities([]);
+        }
     } else {
         setFilteredCities(cities);
     }
@@ -206,7 +216,6 @@ const FirstPage = ({ navigation } : any ) => {
             <DatePicker
               mode='calendar'
               selected={date}
-              
               minimumDate={currentSelectingDate === 'return' ? minDateForReturn : getToday()}
               onDateChange={onDateChange}
             />

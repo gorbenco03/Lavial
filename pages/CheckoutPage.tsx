@@ -18,6 +18,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   const fetchPrice = async () => {
     try {
+      console.log("Fetching price with params:", { from, to, returnDate, passengers });
       const response = await fetch(`${EXPO_SERVER_URL}/get-price`, {
         method: 'POST',
         headers: {
@@ -36,6 +37,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       }
 
       const { routePrice, totalPriceWithFee } = await response.json();
+      console.log("Received price data:", { routePrice, totalPriceWithFee });
       setRoutePrice(routePrice);
       setTotalPrice(totalPriceWithFee);
     } catch (error) {
@@ -47,6 +49,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   const fetchPaymentSheetParams = async () => {
     try {
       const totalAmount = totalPrice * 100;
+      console.log("Fetching payment sheet params with totalAmount:", totalAmount);
       const response = await fetch(`${EXPO_SERVER_URL}/payment-sheet`, {
         method: 'POST',
         headers: {
@@ -60,6 +63,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       }
   
       const { paymentIntent, ephemeralKey, customer } = await response.json();
+      console.log("Received payment sheet params:", { paymentIntent, ephemeralKey, customer });
   
       if (!paymentIntent || !ephemeralKey || !customer) {
         throw new Error('Missing parameters from payment sheet response');
@@ -80,6 +84,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   const initializePaymentSheet = async () => {
     try {
       const { paymentIntent, ephemeralKey, customer } = await fetchPaymentSheetParams();
+      console.log("Initializing payment sheet with:", { paymentIntent, ephemeralKey, customer });
   
       const { error } = await initPaymentSheet({
         merchantDisplayName: "Lavial",
@@ -97,6 +102,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
         console.error('Error initializing payment sheet:', error);
         Alert.alert('Error', 'Could not initialize payment sheet. Please try again.');
       } else {
+        console.log("Payment sheet initialized successfully");
         setLoading(true);
       }
     } catch (error) {
@@ -105,16 +111,26 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   };
 
   useEffect(() => {
+    console.log("Running useEffect with dependencies:", { from, to, returnDate, passengers });
     fetchPrice();
-    initializePaymentSheet();
   }, [from, to, returnDate, passengers]);
 
+  useEffect(() => {
+    if (totalPrice > 0) {
+      console.log("Initializing payment sheet after price fetched...");
+      initializePaymentSheet();
+    }
+  }, [totalPrice]);
+
   const openPaymentSheet = async () => {
+    console.log("Opening payment sheet");
     const { error } = await presentPaymentSheet();
 
     if (error) {
+      console.error("Error in presenting payment sheet:", error);
       Alert.alert(`Error code: ${error.code}`, error.message);
     } else {
+      console.log("Payment sheet presented successfully, navigating to final page");
       navigateToFinalPage();
     }
   };
@@ -129,7 +145,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       outbound: travelDetailsOutbound,
       return: travelDetailsReturn,
     };
-   
+    console.log("Navigating to final page with travelDetails:", travelDetails);
     navigation.navigate('Final', { travelDetails });
   };
 
@@ -238,7 +254,6 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       'Huși': '04:00',
     };
     
-    
     return departureTimes[city] || '16:00'; // Default time if city not found
   };
 
@@ -266,7 +281,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   return (
     <StripeProvider
-      publishableKey="pk_live_51OFFW7L6XuzedjFNJe7O04UUU8PXg1c5OWpkH7Yui9Jork2L3OmwozH02dZZZFAW06csaHwhVpTWLXnhallwuWpX004LqvSxK5"
+      publishableKey='pk_live_51OFFW7L6XuzedjFNJe7O04UUU8PXg1c5OWpkH7Yui9Jork2L3OmwozH02dZZZFAW06csaHwhVpTWLXnhallwuWpX004LqvSxK5'
       urlScheme={EXPO_STRIPE_RETURN_URL}
     >
       <ScrollView style={styles.container}>
