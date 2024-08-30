@@ -193,7 +193,7 @@ const SecondPage = ({ navigation, route }: any) => {
               placeholder="Email"
               onChangeText={(text) => setPassengerField(index, 'email', text)}
               value={item.email}
-              maxLength={30}
+              maxLength={50}
             />
             {item.emailError && <Text style={styles.errorText}>Format email invalid</Text>}
             <View style={styles.phoneRow}>
