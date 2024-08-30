@@ -26,7 +26,7 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
           surname: passenger.surname,
           phone: passenger.phone,
           email: passenger.email,
-          passportSerial: passenger.passportSerial,
+       
           isStudent: passenger.isStudent,
           studentIdSerial: passenger.studentIdSerial,
           from: travelDetails.from,
@@ -48,7 +48,6 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
             surname: passenger.surname,
             phone: passenger.phone,
             email: passenger.email,
-            passportSerial: passenger.passportSerial,
             isStudent: passenger.isStudent,
             studentIdSerial: passenger.studentIdSerial,
             from: travelDetails.to,

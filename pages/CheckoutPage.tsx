@@ -363,10 +363,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
               <FontAwesome name="envelope-o" size={20} color="#333" />
               <Text style={styles.detailsExtras}>{passenger.email}</Text>
             </View>
-            <View style={styles.detailsRow}>
-              <FontAwesome name="id-card-o" size={18} color="#333" />
-              <Text style={styles.detailsExtras}>{passenger.passportSerial}</Text>
-            </View>
+            
             {passenger.isStudent && (
               <View style={styles.detailsRow}>
                 <FontAwesome name="graduation-cap" size={18} color="#333" />

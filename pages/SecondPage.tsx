@@ -14,12 +14,12 @@ const SecondPage = ({ navigation, route }: any) => {
     phone: string;
     phoneError: boolean;
     phonePrefix: string;
-    passportSerial: string;
+    
     isStudent: boolean;
     studentIdSerial: string;
     nameError: boolean;
     surnameError: boolean;
-    passportSerialError: boolean;
+    
     studentIdSerialError: boolean;
   }
 
@@ -31,12 +31,10 @@ const SecondPage = ({ navigation, route }: any) => {
     phone: '',
     phoneError: false,
     phonePrefix: '+40',
-    passportSerial: '',
     isStudent: false,
     studentIdSerial: '',
     nameError: false,
     surnameError: false,
-    passportSerialError: false,
     studentIdSerialError: false,
   }));
 
@@ -123,13 +121,6 @@ const SecondPage = ({ navigation, route }: any) => {
       isValid = false;
     } else {
       updatedPassenger.phoneError = false;
-    }
-
-    if (!passenger.passportSerial) {
-      updatedPassenger.passportSerialError = true;
-      isValid = false;
-    } else {
-      updatedPassenger.passportSerialError = false;
     }
 
     if (passenger.isStudent && !passenger.studentIdSerial) {
@@ -236,14 +227,7 @@ const SecondPage = ({ navigation, route }: any) => {
               </View>
             </View>
             {item.phoneError && <Text style={styles.errorText}>Format numar de telefon invalid</Text>}
-            <TextInput
-              style={[styles.input, item.passportSerialError ? styles.inputError : {}]}
-              placeholder="Seria Pasaport"
-              onChangeText={(text) => setPassengerField(index, 'passportSerial', text)}
-              value={item.passportSerial}
-              maxLength={12}
-            />
-            {item.passportSerialError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
+           
             <View style={styles.detailsRow}>
               <Switch
                 value={item.isStudent}

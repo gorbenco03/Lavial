@@ -34,7 +34,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.lavial.bundle",
       "icon": "./assets/icon.png",
-      "buildNumber": "5"
+      "buildNumber": "6"
     },
     "android": {
       "adaptiveIcon": {
