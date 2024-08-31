@@ -1,29 +1,28 @@
 import React, { useState, useEffect } from 'react';
-import { StyleSheet, View, Text, Modal, FlatList, TouchableOpacity, ScrollView, Alert, TextInput } from 'react-native';
+import { StyleSheet, View, Text, Modal, TouchableOpacity, ScrollView, Alert, TextInput, Platform } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
-import DatePicker from 'react-native-modern-datepicker';
-import { getToday } from "react-native-modern-datepicker";
+import DateTimePicker from '@react-native-community/datetimepicker';
 
 const cities = [
   'Chișinău', 'Huși', 'Tecuci', 'Adjud', 'Onești',
   'Brașov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
-]; 
+];
 
-const FirstPage = ({ navigation } : any) => {
+const FirstPage = ({ navigation }: any) => {
   const [from, setFrom] = useState('');
   const [to, setTo] = useState('');
   const [outboundDate, setOutboundDate] = useState<Date | undefined>(undefined);
   const [returnDate, setReturnDate] = useState<Date | undefined>(undefined);
-  const [minDateForReturn, setMinDateForReturn] = useState<string | undefined>(undefined);
-  const [isModalVisible, setIsModalVisible] = useState(false);
   const [isDatePickerVisible, setIsDatePickerVisible] = useState(false);
-  const [date, setDate] = useState<string>();
   const [currentSelectingDate, setCurrentSelectingDate] = useState<'outbound' | 'return'>('outbound');
   const [numberOfPeople, setNumberOfPeople] = useState(1);
   const [settingCityFor, setSettingCityFor] = useState<'from' | 'to'>();
+  const [isModalVisible, setIsModalVisible] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [filteredCities, setFilteredCities] = useState<string[]>(cities);
-  const today = getToday();
+  const [showPicker, setShowPicker] = useState(false);
+
+  const today = new Date(); // Data de azi
 
   const isValid = () => from !== '' && to !== '' && outboundDate;
 
@@ -43,33 +42,33 @@ const FirstPage = ({ navigation } : any) => {
 
   const goToPersonalDetails = async () => {
     if (isValid()) {
-        try {
-            const response = await fetch('https://lavial.icu/get-price', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ from, to }),
-            });
-            const data = await response.json();
+      try {
+        const response = await fetch('https://lavial.icu/get-price', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({ from, to }),
+        });
+        const data = await response.json();
 
-            if (data.routePrice === 0) {
-                Alert.alert("Eroare", "Această rută nu este disponibilă.");
-            } else {
-                navigation.navigate('Detalii', {
-                    from: from,
-                    to: to,
-                    outboundDate: outboundDate?.toDateString(),
-                    returnDate: returnDate?.toDateString(),
-                    numberOfPeople: numberOfPeople,
-                });
-            }
-        } catch (error) {
-            console.error('Error fetching price:', error);
-            Alert.alert("Eroare", "A apărut o eroare la verificarea prețului rutei.");
+        if (data.routePrice === 0) {
+          Alert.alert("Eroare", "Această rută nu este disponibilă.");
+        } else {
+          navigation.navigate('Detalii', {
+            from: from,
+            to: to,
+            outboundDate: outboundDate?.toDateString(),
+            returnDate: returnDate?.toDateString(),
+            numberOfPeople: numberOfPeople,
+          });
         }
+      } catch (error) {
+        console.error('Error fetching price:', error);
+        Alert.alert("Eroare", "A apărut o eroare la verificarea prețului rutei.");
+      }
     } else {
-        Alert.alert("Ai grijă", "Te rog completează toate câmpurile pentru a continua.");
+      Alert.alert("Ai grijă", "Te rog completează toate câmpurile pentru a continua.");
     }
   };
 
@@ -81,19 +80,23 @@ const FirstPage = ({ navigation } : any) => {
     }).format(date);
   };
 
-  const handleDatePress = (dateType: 'outbound' | 'return') => {
-    if (dateType === 'return' && !outboundDate) {
-      Alert.alert("Atenție", "Selectați mai întâi data de plecare.");
-      return;
+  const handleDateChange = (event: any, selectedDate: Date | undefined) => {
+    setShowPicker(false);
+    if (selectedDate) {
+      if (currentSelectingDate === 'outbound') {
+        setOutboundDate(selectedDate);
+        if (returnDate && returnDate <= selectedDate) {
+          setReturnDate(undefined);
+        }
+      } else {
+        setReturnDate(selectedDate);
+      }
     }
-    setCurrentSelectingDate(dateType);
-    setIsDatePickerVisible(true);
+  };
 
-    if (dateType === 'outbound') {
-      setDate(outboundDate ? outboundDate.toISOString().split('T')[0] : getToday());
-    } else {
-      setDate(returnDate ? returnDate.toISOString().split('T')[0] : minDateForReturn);
-    }
+  const showDatePicker = (dateType: 'outbound' | 'return') => {
+    setCurrentSelectingDate(dateType);
+    setShowPicker(true);
   };
 
   const setCity = (city: string) => {
@@ -111,22 +114,6 @@ const FirstPage = ({ navigation } : any) => {
     }
   };
 
-  const onDateChange = (selectedDate: string) => {
-    const newDate = new Date(selectedDate.replace(/\//g, '-'));
-    if (currentSelectingDate === 'outbound') {
-      setOutboundDate(newDate);
-      const nextDay = new Date(newDate);
-      nextDay.setDate(newDate.getDate() + 1);
-      setMinDateForReturn(nextDay.toISOString().split('T')[0]);
-      if (returnDate && returnDate < nextDay) {
-        setReturnDate(undefined);
-      }
-    } else {
-      setReturnDate(newDate);
-    }
-    setIsDatePickerVisible(false);
-  };
-
   const updateSearch = (query: string) => {
     const lowercaseQuery = query.toLowerCase();
     setSearchQuery(lowercaseQuery);
@@ -140,21 +127,21 @@ const FirstPage = ({ navigation } : any) => {
 
   const updateFilteredCities = async () => {
     if (from) {
-        try {
-            const response = await fetch('https://lavial.icu/get-routes');
-            const routes = await response.json();
+      try {
+        const response = await fetch('https://lavial.icu/get-routes');
+        const routes = await response.json();
 
-            if (routes[from]) {
-                setFilteredCities(routes[from]);
-            } else {
-                setFilteredCities([]);
-            }
-        } catch (error) {
-            console.error('Error fetching routes:', error);
-            setFilteredCities([]);
+        if (routes[from]) {
+          setFilteredCities(routes[from]);
+        } else {
+          setFilteredCities([]);
         }
+      } catch (error) {
+        console.error('Error fetching routes:', error);
+        setFilteredCities([]);
+      }
     } else {
-        setFilteredCities(cities);
+      setFilteredCities(cities);
     }
   };
 
@@ -180,47 +167,51 @@ const FirstPage = ({ navigation } : any) => {
           </TouchableOpacity>
         </View>
 
-        {/* Conditionally render the Reset Button */}
         {(from || to) && (
           <TouchableOpacity style={styles.resetButton} onPress={handleReset}>
             <Text style={styles.resetButtonText}>Resetează</Text>
           </TouchableOpacity>
         )}
 
-        <TouchableOpacity style={styles.dateRow} onPress={() => handleDatePress('outbound')}>
-          <Text style={styles.dateText}>Tur</Text>
-          <Text style={styles.dateValue}>{outboundDate ? formatDate(outboundDate) : 'Selectează data'}</Text>
+        <View style={styles.dateRow}>
+          <TouchableOpacity style={styles.datePickerButton} onPress={() => showDatePicker('outbound')}>
+            <Text style={styles.dateText}>Tur</Text>
+            <Text style={styles.dateValue}>{outboundDate ? formatDate(outboundDate) : 'Selectează data'}</Text>
+          </TouchableOpacity>
           {outboundDate && (
-            <TouchableOpacity onPress={() => setOutboundDate(undefined)}>
-              <MaterialIcons name="close" size={16} />
+            <TouchableOpacity onPress={() => setOutboundDate(undefined)} style={styles.clearButton}>
+              <MaterialIcons name="close" size={16} color="black" />
             </TouchableOpacity>
           )}
-        </TouchableOpacity>
+        </View>
 
-        <TouchableOpacity
-          style={[styles.dateRow, { backgroundColor: outboundDate ? '#E0E0E0' : '#F5F5F5' }]}
-          onPress={() => handleDatePress('return')}
-          disabled={!outboundDate}
-        >
-          <Text style={styles.dateText}>Retur</Text>
-          <Text style={styles.dateValue}>{returnDate ? formatDate(returnDate) : ''}</Text>
+        <View style={[styles.dateRow, { backgroundColor: outboundDate ? '#E0E0E0' : '#F5F5F5' }]}>
+          <TouchableOpacity
+            style={styles.datePickerButton}
+            onPress={() => showDatePicker('return')}
+            disabled={!outboundDate}
+          >
+            <Text style={styles.dateText}>Retur</Text>
+            <Text style={styles.dateValue}>{returnDate ? formatDate(returnDate) : 'Selectează data'}</Text>
+          </TouchableOpacity>
           {returnDate && (
-            <TouchableOpacity onPress={() => setReturnDate(undefined)}>
-              <MaterialIcons name="close" size={16} />
+            <TouchableOpacity onPress={() => setReturnDate(undefined)} style={styles.clearButton}>
+              <MaterialIcons name="close" size={16} color="black" />
             </TouchableOpacity>
           )}
-        </TouchableOpacity>
+        </View>
 
-        {isDatePickerVisible && (
-          <View style={[styles.datePickerContainer, { top: 0 }]}>
-            <DatePicker
-              mode='calendar'
-              selected={date}
-              minimumDate={currentSelectingDate === 'return' ? minDateForReturn : getToday()}
-              onDateChange={onDateChange}
+        {showPicker && (
+          <View style={styles.datePickerWrapper}>
+            <DateTimePicker
+              value={currentSelectingDate === 'outbound' ? outboundDate || today : returnDate || today}
+              mode="date"
+              display={Platform.OS === 'ios' ? 'inline' : 'default'}
+              minimumDate={currentSelectingDate === 'outbound' ? today : outboundDate ? new Date(outboundDate.getTime() + 24 * 60 * 60 * 1000) : today}
+              onChange={handleDateChange}
             />
-            <TouchableOpacity onPress={() => setIsDatePickerVisible(false)} style={styles.closeButton}>
-              <Text style={styles.searchButtonText}>Închide</Text>
+            <TouchableOpacity onPress={() => setShowPicker(false)} style={styles.closeButton}>
+              <Text style={styles.closeButtonText}>Închide</Text>
             </TouchableOpacity>
           </View>
         )}
@@ -317,20 +308,16 @@ const styles = StyleSheet.create({
     fontWeight: 'bold',
   },
   closeButton: {
-    backgroundColor: '#1E90FF',
-    borderRadius: 10,
-    padding: 5,
-    marginHorizontal: 100,
-    marginBottom: 10,
+    marginTop: 10,
+    backgroundColor: '#FF6347',
+    padding: 10,
+    borderRadius: 8,
     alignItems: 'center',
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
+  },
+  closeButtonText: {
+    color: '#FFFFFF',
+    fontSize: 16,
+    fontWeight: 'bold',
   },
   headerText: {
     textAlign: 'center',
@@ -355,15 +342,21 @@ const styles = StyleSheet.create({
     borderRadius: 10,
     backgroundColor: '#E0E0E0',
   },
+  datePickerButton: {
+    flex: 1,
+    flexDirection: 'row',
+    justifyContent: 'space-between',
+    alignItems: 'center',
+  },
   dateText: {
     fontSize: 16,
     color: "black",
-    fontFamily: 'ClashGrotesk-Regular', 
+    fontFamily: 'ClashGrotesk-Regular',
   },
   dateValue: {
     fontSize: 16,
     color: 'black',
-    fontFamily: 'ClashGrotesk-Regular', 
+    fontFamily: 'ClashGrotesk-Regular',
   },
   dropdownIcon: {
     marginLeft: 'auto',
@@ -375,11 +368,14 @@ const styles = StyleSheet.create({
   destination: {
     fontFamily: 'ClashGrotesk-Regular',
   },
-  datePickerContainer: {
-    position: 'relative',
-    backgroundColor: 'white',
-    borderRadius: 22,
-    marginVertical: 10,
+  datePickerWrapper: {
+    backgroundColor: '#FFFFFF',
+    borderRadius: 12,
+    padding: 10,
+    marginTop: 20,
+  },
+  clearButton: {
+    marginLeft: 10,
   },
   passengerPickerRow: {
     flexDirection: 'row',
@@ -393,7 +389,7 @@ const styles = StyleSheet.create({
   },
   passengerText: {
     flex: 1,
-    fontFamily: 'ClashGrotesk-Regular', 
+    fontFamily: 'ClashGrotesk-Regular',
     fontSize: 16,
     color: "#000"
   },
@@ -419,8 +415,8 @@ const styles = StyleSheet.create({
   },
   searchButtonText: {
     color: '#fff',
-    fontFamily: 'ClashGrotesk-Semibold', 
-    fontSize : 20 ,
+    fontFamily: 'ClashGrotesk-Semibold',
+    fontSize: 20,
     fontWeight: 'bold',
   },
   centeredView: {
@@ -438,11 +434,8 @@ const styles = StyleSheet.create({
     padding: 10,
     backgroundColor: '#E0E0E0',
   },
-  closeMoButton: {
-    position: 'absolute',
-    top: 10,
-    right: 10,
-    zIndex: 1,
+  closeModalButton: {
+    alignSelf: 'flex-end',
   },
   modalView: {
     width: '100%',
@@ -480,9 +473,6 @@ const styles = StyleSheet.create({
   cityIcon: {
     marginRight: 15,
     color: '#000',
-  },
-  closeModalButton: {
-    alignSelf: 'flex-end',
   },
   modalText: {
     fontSize: 18,

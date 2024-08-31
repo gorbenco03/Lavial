@@ -2,7 +2,7 @@
   "expo": {
     "name": "Lavial",
     "slug": "Lavial",
-    "version": "3.0.1",
+    "version": "3.0.2",
     "plugins": [
       [
         "expo-font",
@@ -34,7 +34,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.lavial.bundle",
       "icon": "./assets/icon.png",
-      "buildNumber": "7"
+      "buildNumber": "8"
     },
     "android": {
       "adaptiveIcon": {
@@ -48,7 +48,7 @@
         "READ_EXTERNAL_STORAGE"
       ],
       "package": "com.yourapp.bundle",
-      "versionCode": 15
+      "versionCode": 16
     },
     "web": {
       "favicon": "./assets/icon.png"
