@@ -48,7 +48,7 @@
         "READ_EXTERNAL_STORAGE"
       ],
       "package": "com.yourapp.bundle",
-      "versionCode": 16
+      "versionCode": 17
     },
     "web": {
       "favicon": "./assets/icon.png"

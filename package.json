@@ -38,7 +38,6 @@
     "react-dom": "18.2.0",
     "react-native": "^0.74.2",
     "react-native-add-calendar-event": "^5.0.0",
-    "react-native-date-picker": "^5.0.6",
     "react-native-dotenv": "^3.4.11",
     "react-native-dropdown-picker": "^5.4.6",
     "react-native-elements": "^3.4.3",
