@@ -236,15 +236,23 @@ const SecondPage = ({ navigation, route }: any) => {
               <Text style={styles.detailsRoute}>Sunt student</Text>
             </View>
             {item.isStudent && (
-              <TextInput
-                style={[styles.input, item.studentIdSerialError ? styles.inputError : {}]}
-                placeholder="Seria legitimatiei de student"
-                onChangeText={(text) => setPassengerField(index, 'studentIdSerial', text)}
-                value={item.studentIdSerial}
-                maxLength={12}
-              />
-            )}
-            {item.isStudent && item.studentIdSerialError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
+  <>
+    <TextInput
+      style={[styles.input, item.studentIdSerialError ? styles.inputError : {}]}
+      placeholder="Seria legitimatiei de student"
+      onChangeText={(text) => setPassengerField(index, 'studentIdSerial', text)}
+      value={item.studentIdSerial}
+      maxLength={12}
+    />
+    {item.studentIdSerialError && <Text style={styles.errorText}>Acest camp este obligatoriu</Text>}
+    
+    {/* Mesaj de atenționare pentru studenți */}
+    <Text style={styles.warningText}>
+      Atenție! Legitimația de student trebuie prezentată la șofer la îmbarcare, altfel biletul nu este valid.
+    </Text>
+  </>
+)}
+            
           </View>
         )}
         ListFooterComponent={
@@ -480,6 +488,13 @@ const styles = StyleSheet.create({
     flexDirection: 'row',
     alignItems: 'center',
     marginHorizontal: 0,
+  },
+  warningText: {
+    color: 'orange',  // culoare portocalie pentru avertizare
+    fontSize: 14,
+    marginTop: 10,
+    fontFamily: 'ClashGrotesk-Semibold', 
+    marginLeft: 10,
   },
   payButton: {
     backgroundColor: '#1E90FF', // light blue background

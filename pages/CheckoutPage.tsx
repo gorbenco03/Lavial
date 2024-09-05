@@ -273,6 +273,15 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   const getTravelDetails = (from: string, to: string): TravelDetails | undefined => {
     const details = uniqueTimeAndPlace.find((details) => details.from === from && details.to === to);
+    
+    // Verifică dacă destinația este Chișinău și setează ora de sosire la 07:00
+    if (details && details.to === 'Chișinău') {
+      return {
+        ...details,
+        arrivalTime: '07:00',  // Ora de sosire setată pentru Chișinău
+      };
+    }
+  
     return details;
   };
 
@@ -382,11 +391,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
           <Text style={styles.sectionTitle}>Taxe suplimentare</Text>
           <View style={styles.detailsRow}>
             <FontAwesome name="info-circle" size={18} color="#333" />
-            <Text style={styles.detailsExtras}>Taxă Stripe (2.9%)</Text>
-          </View>
-          <View style={styles.detailsRow}>
-            <FontAwesome name="info-circle" size={18} color="#333" />
-            <Text style={styles.detailsExtras}>Taxă fixă: RON 1.3</Text>
+            <Text style={styles.detailsExtras}>Taxă Stripe (1.5%) + 1.3 RON</Text>
           </View>
         </View>
 

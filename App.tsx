@@ -106,8 +106,8 @@ const App = () => {
             options={{
               headerTitle: () => (
                 <Image
-                  source={require('./assets/logo-lavial.png')}
-                  style={{ width: 168, height: 56, marginTop: -10 }}
+                  source={require('./assets/logo-lavial.jpeg')}
+                  style={{ width: 140, height: 35, marginTop: 5 }}
                 />
               ),
               headerTitleAlign: 'center',
@@ -119,8 +119,8 @@ const App = () => {
             options={{
               headerTitle: () => (
                 <Image
-                  source={require('./assets/logo-lavial.png')}
-                  style={{ width: 168, height: 56, marginTop: -10 }}
+                  source={require('./assets/logo-lavial.jpeg')}
+                  style={{ width: 140, height: 35, marginTop: 5 }}
                 />
               ),
               headerTitleAlign: 'center',
@@ -132,8 +132,8 @@ const App = () => {
             options={{
               headerTitle: () => (
                 <Image
-                  source={require('./assets/logo-lavial.png')}
-                  style={{ width: 168, height: 56, marginTop: -10 }}
+                  source={require('./assets/logo-lavial.jpeg')}
+                  style={{ width: 140, height: 35, marginTop: 5 }}
                 />
               ),
               headerTitleAlign: 'center',
@@ -145,8 +145,8 @@ const App = () => {
             options={{
               headerTitle: () => (
                 <Image
-                  source={require('./assets/logo-lavial.png')}
-                  style={{ width: 168, height: 56, marginTop: -10 }}
+                  source={require('./assets/logo-lavial.jpeg')}
+                  style={{ width: 140, height: 35, marginTop: 5 }}
                 />
               ),
               headerTitleAlign: 'center',
