@@ -34,7 +34,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.lavial.bundle",
       "icon": "./assets/icon.png",
-      "buildNumber": "8"
+      "buildNumber": "9"
     },
     "android": {
       "adaptiveIcon": {
@@ -48,7 +48,7 @@
         "READ_EXTERNAL_STORAGE"
       ],
       "package": "com.yourapp.bundle",
-      "versionCode": 18
+      "versionCode": 19
     },
     "web": {
       "favicon": "./assets/icon.png"

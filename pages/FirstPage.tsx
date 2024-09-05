@@ -40,17 +40,48 @@ const FirstPage = ({ navigation }: any) => {
     setNumberOfPeople(1);
   };
 
+  const checkReservationStatus = async (date: Date) => {
+    try {
+      const response = await fetch('https://lavial.icu/check-reservation-status', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ date: date.toISOString() }),
+      });
+      const data = await response.json();
+      return data.stopped;
+    } catch (error) {
+      console.error('Error checking reservation status:', error);
+      Alert.alert("Eroare", "A apărut o eroare la verificarea statusului rezervărilor.");
+      return false;
+    }
+  };
+
   const goToPersonalDetails = async () => {
     if (isValid()) {
       try {
+        // Verifică statusul rezervărilor
+        const isStopped = await checkReservationStatus(outboundDate!);
+        if (isStopped) {
+          Alert.alert("Avertisment", "Rezervările sunt oprite pentru această dată.");
+          return;
+        }
+
+        // Dacă rezervările nu sunt oprite, continuăm cu verificarea prețului
         const response = await fetch('https://lavial.icu/get-price', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ from, to }),
+          body: JSON.stringify({ from, to, returnDate: returnDate?.toISOString(), passengers: Array(numberOfPeople).fill({ isStudent: false }) }),
         });
         const data = await response.json();
+
+        if (data.message && data.message === 'Rezervările sunt oprite pentru această dată.') {
+          Alert.alert("Avertisment", "Rezervările sunt oprite pentru această dată.");
+          return;
+        }
 
         if (data.routePrice === 0) {
           Alert.alert("Eroare", "Această rută nu este disponibilă.");
