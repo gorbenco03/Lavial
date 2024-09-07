@@ -89,6 +89,9 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       const { error } = await initPaymentSheet({
         merchantDisplayName: "Lavial",
         customerId: customer,
+        applePay: {
+          merchantCountryCode: 'US',
+        },
         customerEphemeralKeySecret: ephemeralKey,
         paymentIntentClientSecret: paymentIntent,
         returnURL: `${EXPO_STRIPE_RETURN_URL}`,
@@ -97,9 +100,10 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
           email: '',
         }
       });
+      
   
       if (error) {
-        console.error('Error initializing payment sheet:', error);
+        console.error('Error ializing payment sheet:', error);
         Alert.alert('Error', 'Could not initialize payment sheet. Please try again.');
       } else {
         console.log("Payment sheet initialized successfully");
@@ -292,6 +296,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     <StripeProvider
       publishableKey='pk_live_51OFFW7L6XuzedjFNJe7O04UUU8PXg1c5OWpkH7Yui9Jork2L3OmwozH02dZZZFAW06csaHwhVpTWLXnhallwuWpX004LqvSxK5'
       urlScheme={EXPO_STRIPE_RETURN_URL}
+      merchantIdentifier="merchant.com.lavial"
     >
       <ScrollView style={styles.container}>
         <Text style={styles.headerText}>Detalii despre călătorie</Text>
