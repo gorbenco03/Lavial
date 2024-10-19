@@ -214,7 +214,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       from: 'Chișinău', 
       fromStation: 'Autogara NORD, platforma 9',
       to: 'Alba Iulia', 
-      toStation: 'Autogara Transmixt, Adresă Piața 1 Decembrie 1918, 6',
+      toStation: 'In fata la Petrom, Bulevardul Ferdinand I nr. 76',
       departureTime: '16:00', 
       arrivalTime: '03:45' 
     },
