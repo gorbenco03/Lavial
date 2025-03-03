@@ -57,6 +57,7 @@ export interface TravelDetailsType {
   passengers: Passenger[];
   outbound: TravelDetails | undefined;
   return: TravelDetails | undefined;
+  totalPrice : number
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();

@@ -148,6 +148,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       passengers,
       outbound: travelDetailsOutbound,
       return: travelDetailsReturn,
+      totalPrice, // Total price with fees
     };
     console.log("Navigating to final page with travelDetails:", travelDetails);
     navigation.navigate('Final', { travelDetails });
@@ -294,7 +295,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
   return (
     <StripeProvider
-      publishableKey='pk_live_51OFFW7L6XuzedjFNJe7O04UUU8PXg1c5OWpkH7Yui9Jork2L3OmwozH02dZZZFAW06csaHwhVpTWLXnhallwuWpX004LqvSxK5'
+      publishableKey={EXPO_STRIPE_PUBLISHABLE_KEY}
       urlScheme={EXPO_STRIPE_RETURN_URL}
       merchantIdentifier="merchant.com.lavial"
     >

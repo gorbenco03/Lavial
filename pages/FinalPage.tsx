@@ -36,7 +36,8 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
           toStation: outbound?.toStation || '',
           departureTime: outbound?.departureTime || '',
           arrivalTime: outbound?.arrivalTime || '',
-          tripType: 'tur'
+          tripType: 'tur', 
+          price: travelDetails.totalPrice,
         });
 
         qrDataArray.push(qrStringOutbound);
@@ -57,7 +58,8 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
             toStation: returnDetails?.toStation || '',
             departureTime: returnDetails?.departureTime || '',
             arrivalTime: returnDetails?.arrivalTime || '',
-            tripType: 'retur'
+            tripType: 'retur', 
+            price: travelDetails.totalPrice,
           });
 
           qrDataArray.push(qrStringReturn);
