@@ -15,10 +15,13 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
   const { from, to, outboundDate, returnDate, passengers } = route.params;
-
+  const formatDateForBackend = (dateString: string | number | Date) => {
+    const date = new Date(dateString);
+    return date.toISOString().split('T')[0]; // Returns "YYYY-MM-DD"
+  };
   const fetchPrice = async () => {
     try {
-      console.log("Fetching price with params:", { from, to, returnDate, passengers });
+      console.log("Fetching price with params:", { from, to, date: formatDateForBackend(outboundDate), returnDate, passengers });
       const response = await fetch(`${EXPO_SERVER_URL}/get-price`, {
         method: 'POST',
         headers: {
@@ -27,7 +30,8 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
         body: JSON.stringify({
           from,
           to,
-          returnDate,
+          date: formatDateForBackend(outboundDate),  // Include formatted outboundDate
+          returnDate: returnDate ? formatDateForBackend(returnDate) : undefined,  // Include formatted returnDate if present
           passengers,
         }),
       });

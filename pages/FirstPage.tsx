@@ -73,22 +73,28 @@ const FirstPage = ({ navigation }: any) => {
           Alert.alert("Avertisment", "Rezervările sunt oprite pentru această dată.");
           return;
         }
-
+  
         // Dacă rezervările nu sunt oprite, continuăm cu verificarea prețului
         const response = await fetch('https://lavial.icu/get-price', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ from, to, returnDate: returnDate?.toISOString(), passengers: Array(numberOfPeople).fill({ isStudent: false }) }),
+          body: JSON.stringify({ 
+            from, 
+            to, 
+            date: outboundDate!.toISOString(), // Add outbound date here
+            returnDate: returnDate?.toISOString(), 
+            passengers: Array(numberOfPeople).fill({ isStudent: false }) 
+          }),
         });
         const data = await response.json();
-
+  
         if (data.message && data.message === 'Rezervările sunt oprite pentru această dată.') {
           Alert.alert("Avertisment", "Rezervările sunt oprite pentru această dată.");
           return;
         }
-
+  
         if (data.routePrice === 0) {
           Alert.alert("Eroare", "Această rută nu este disponibilă.");
         } else {
