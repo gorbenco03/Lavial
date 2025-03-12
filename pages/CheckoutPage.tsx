@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, StyleSheet, TouchableOpacity, Alert, ScrollView } from 'react-native';
 import { MaterialCommunityIcons, FontAwesome } from '@expo/vector-icons';
 import { StripeProvider, useStripe } from '@stripe/stripe-react-native';
-import { RootStackParamList, TravelDetailsType, Passenger, TravelDetails } from '../App'; 
+import { RootStackParamList, TravelDetailsType, Passenger, TravelDetails } from '../App';
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import { EXPO_STRIPE_PUBLISHABLE_KEY, EXPO_STRIPE_RETURN_URL, EXPO_SERVER_URL } from '@env';
 
@@ -10,163 +10,160 @@ type CheckoutProps = NativeStackScreenProps<RootStackParamList, 'Checkout'>;
 
 const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
-  const [loading, setLoading] = useState(false);
+  const [loadingPayment, setLoadingPayment] = useState(false);
+  const [loadingReservation, setLoadingReservation] = useState(false);
   const [routePrice, setRoutePrice] = useState<number>(0);
   const [totalPrice, setTotalPrice] = useState<number>(0);
 
   const { from, to, outboundDate, returnDate, passengers } = route.params;
+
+  // Format date for backend API (YYYY-MM-DD)
   const formatDateForBackend = (dateString: string | number | Date) => {
     const date = new Date(dateString);
-    return date.toISOString().split('T')[0]; // Returns "YYYY-MM-DD"
+    return date.toISOString().split('T')[0];
   };
+
+  // Fetch price from the backend when the component mounts
   const fetchPrice = async () => {
     try {
-      console.log("Fetching price with params:", { from, to, date: formatDateForBackend(outboundDate), returnDate, passengers });
       const response = await fetch(`${EXPO_SERVER_URL}/get-price`, {
         method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           from,
           to,
-          date: formatDateForBackend(outboundDate),  // Include formatted outboundDate
-          returnDate: returnDate ? formatDateForBackend(returnDate) : undefined,  // Include formatted returnDate if present
+          date: formatDateForBackend(outboundDate),
+          returnDate: returnDate ? formatDateForBackend(returnDate) : undefined,
           passengers,
         }),
       });
-
-      if (!response.ok) {
-        throw new Error('Failed to fetch price');
-      }
-
+      if (!response.ok) throw new Error('Failed to fetch price');
       const { routePrice, totalPriceWithFee } = await response.json();
-      console.log("Received price data:", { routePrice, totalPriceWithFee });
       setRoutePrice(routePrice);
       setTotalPrice(totalPriceWithFee);
     } catch (error) {
-      console.error('Error fetching price:', error);
       Alert.alert('Error', 'Could not fetch price. Please try again.');
     }
   };
 
+  // Fetch Stripe payment sheet parameters when "Pay Now" is pressed
   const fetchPaymentSheetParams = async () => {
-    try {
-      const totalAmount = totalPrice * 100;
-      console.log("Fetching payment sheet params with totalAmount:", totalAmount);
-      const response = await fetch(`${EXPO_SERVER_URL}/payment-sheet`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ totalAmount }),
-      });
-  
-      if (!response.ok) {
-        throw new Error('Failed to fetch payment sheet params');
-      }
-  
-      const { paymentIntent, ephemeralKey, customer } = await response.json();
-      console.log("Received payment sheet params:", { paymentIntent, ephemeralKey, customer });
-  
-      if (!paymentIntent || !ephemeralKey || !customer) {
-        throw new Error('Missing parameters from payment sheet response');
-      }
-  
-      return {
-        paymentIntent,
-        ephemeralKey,
-        customer,
-      };
-    } catch (error) {
-      console.error('Error fetching payment sheet params:', error);
-      Alert.alert('Error', 'Could not fetch payment sheet parameters. Please try again.');
-      throw error;
+    const totalAmount = totalPrice * 100; // Convert to cents for Stripe
+    const response = await fetch(`${EXPO_SERVER_URL}/payment-sheet`, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ totalAmount }),
+    });
+    if (!response.ok) throw new Error('Failed to fetch payment sheet params');
+    const { paymentIntent, ephemeralKey, customer } = await response.json();
+    if (!paymentIntent || !ephemeralKey || !customer) {
+      throw new Error('Missing parameters from payment sheet response');
     }
+    return { paymentIntent, ephemeralKey, customer };
   };
-  
-  const initializePaymentSheet = async () => {
+
+  // Handle payment process when "Pay Now" button is pressed
+  const handlePayment = async () => {
+    setLoadingPayment(true);
     try {
+      // Fetch payment sheet parameters only when the button is pressed
       const { paymentIntent, ephemeralKey, customer } = await fetchPaymentSheetParams();
-      console.log("Initializing payment sheet with:", { paymentIntent, ephemeralKey, customer });
-  
-      const { error } = await initPaymentSheet({
-        merchantDisplayName: "Lavial",
+
+      // Initialize the Stripe payment sheet with fetched parameters
+      const { error: initError } = await initPaymentSheet({
+        merchantDisplayName: 'Lavial',
         customerId: customer,
-        applePay: {
-          merchantCountryCode: 'US',
-        },
         customerEphemeralKeySecret: ephemeralKey,
         paymentIntentClientSecret: paymentIntent,
-        returnURL: `${EXPO_STRIPE_RETURN_URL}`,
-        defaultBillingDetails: {
-          name: '',
-          email: '',
-        }
+        returnURL: EXPO_STRIPE_RETURN_URL,
       });
-      
-  
-      if (error) {
-        console.error('Error ializing payment sheet:', error);
-        Alert.alert('Error', 'Could not initialize payment sheet. Please try again.');
+      if (initError) {
+        throw new Error('Could not initialize payment sheet');
+      }
+
+      // Present the payment sheet to the user
+      const { error: presentError } = await presentPaymentSheet();
+      if (presentError) {
+        Alert.alert('Payment Failed', presentError.message);
       } else {
-        console.log("Payment sheet initialized successfully");
-        setLoading(true);
+        // Navigate to the Final screen on successful payment
+        navigation.navigate('Final', {
+          travelDetails: {
+            from,
+            to,
+            outboundDate,
+            returnDate,
+            passengers,
+            totalPrice,
+            outbound: travelDetailsOutbound,
+            return: travelDetailsReturn,
+            status: 'reserved'
+          },
+          
+        });
       }
     } catch (error) {
-      console.error('Error in initializePaymentSheet:', error);
+      Alert.alert('Error', 'Could not process payment. Please try again.');
+    } finally {
+      setLoadingPayment(false);
     }
   };
 
+  // Handle reservation process when "Reserve Ticket" button is pressed
+  const handleReservation = async () => {
+    setLoadingReservation(true);
+    try {
+      const response = await fetch(`${EXPO_SERVER_URL}/reserve-ticket`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          from,
+          to,
+          date: formatDateForBackend(outboundDate),
+          returnDate: returnDate ? formatDateForBackend(returnDate) : undefined,
+          passengers,
+          totalPrice,
+        }),
+      });
+      if (!response.ok) throw new Error('Failed to reserve ticket');
+      const { reservationId } = await response.json();
+
+      navigation.navigate('Final', {
+        travelDetails: {
+          from,
+          to,
+          outboundDate,
+          returnDate,
+          passengers,
+          totalPrice,
+          outbound: travelDetailsOutbound,
+          return: travelDetailsReturn,
+          status: 'paid'
+        }
+      });
+    } catch (error) {
+      Alert.alert('Error', 'Could not reserve ticket. Please try again.');
+    } finally {
+      setLoadingReservation(false);
+    }
+  };
+
+  // Fetch price on component mount or when route params change
   useEffect(() => {
-    console.log("Running useEffect with dependencies:", { from, to, returnDate, passengers });
     fetchPrice();
-  }, [from, to, returnDate, passengers]);
+  }, [from, to, outboundDate, returnDate, passengers]);
 
-  useEffect(() => {
-    if (totalPrice > 0) {
-      console.log("Initializing payment sheet after price fetched...");
-      initializePaymentSheet();
-    }
-  }, [totalPrice]);
-
-  const openPaymentSheet = async () => {
-    console.log("Opening payment sheet");
-    const { error } = await presentPaymentSheet();
-
-    if (error) {
-      console.error("Error in presenting payment sheet:", error);
-      Alert.alert(`Error code: ${error.code}`, error.message);
-    } else {
-      console.log("Payment sheet presented successfully, navigating to final page");
-      navigateToFinalPage();
-    }
-  };
-
-  const navigateToFinalPage = () => {
-    const travelDetails: TravelDetailsType = {
-      from,
-      to,
-      outboundDate,
-      returnDate,
-      passengers,
-      outbound: travelDetailsOutbound,
-      return: travelDetailsReturn,
-      totalPrice, // Total price with fees
-    };
-    console.log("Navigating to final page with travelDetails:", travelDetails);
-    navigation.navigate('Final', { travelDetails });
-  };
-
+  // Format date for display (DD.MM.YYYY)
   const formatDate = (date: string) => {
     return new Intl.DateTimeFormat('ro-RO', {
       day: '2-digit',
       month: '2-digit',
-      year: 'numeric'
+      year: 'numeric',
     }).format(new Date(date));
   };
 
-  const timeAndPlace: TravelDetails[] = [
+  // Sample travel details (can be expanded or fetched from backend)
+   const timeAndPlace: TravelDetails[] = [
     { 
       from: 'Chișinău', 
       fromStation: 'Autogara NORD, platforma 9',
@@ -249,6 +246,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     },
   ];
 
+  // Generate return departure times for cities
   const getReturnDepartureTime = (city: string) => {
     const departureTimes: Record<string, string> = {
       'Timișoara': '16:00',
@@ -262,10 +260,10 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       'Bârlad': '03:30',
       'Huși': '04:00',
     };
-    
-    return departureTimes[city] || '16:00'; // Default time if city not found
+    return departureTimes[city] || '16:00';
   };
 
+  // Add reverse routes to travel details
   timeAndPlace.forEach(detail => {
     const reverseDetail: TravelDetails = {
       from: detail.to,
@@ -273,24 +271,19 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
       to: detail.from,
       toStation: detail.fromStation,
       departureTime: getReturnDepartureTime(detail.to),
-      arrivalTime: detail.departureTime, // Assuming the return arrival time is the same
+      arrivalTime: detail.departureTime,
     };
     timeAndPlace.push(reverseDetail);
   });
 
   const uniqueTimeAndPlace = Array.from(new Set(timeAndPlace.map(a => JSON.stringify(a)))).map(a => JSON.parse(a));
 
+  // Get travel details for a specific route
   const getTravelDetails = (from: string, to: string): TravelDetails | undefined => {
     const details = uniqueTimeAndPlace.find((details) => details.from === from && details.to === to);
-    
-    // Verifică dacă destinația este Chișinău și setează ora de sosire la 07:00
     if (details && details.to === 'Chișinău') {
-      return {
-        ...details,
-        arrivalTime: '07:00',  // Ora de sosire setată pentru Chișinău
-      };
+      return { ...details, arrivalTime: '07:00' };
     }
-  
     return details;
   };
 
@@ -305,7 +298,8 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
     >
       <ScrollView style={styles.container}>
         <Text style={styles.headerText}>Detalii despre călătorie</Text>
-        
+
+        {/* Outbound Trip Details */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Detalii cursă (Tur)</Text>
           <View style={styles.detailsRow}>
@@ -337,6 +331,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
           )}
         </View>
 
+        {/* Return Trip Details (if applicable) */}
         {returnDate && travelDetailsReturn && (
           <View style={styles.section}>
             <Text style={styles.sectionTitle}>Detalii cursă (Retur)</Text>
@@ -368,6 +363,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
           </View>
         )}
 
+        {/* Passenger Information */}
         {passengers.map((passenger: Passenger, index: number) => (
           <View key={index} style={styles.section}>
             <Text style={styles.sectionTitle}>Informații personale despre pasagerul {index + 1}</Text>
@@ -382,7 +378,6 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
               <FontAwesome name="envelope-o" size={20} color="#333" />
               <Text style={styles.detailsExtras}>{passenger.email}</Text>
             </View>
-            
             {passenger.isStudent && (
               <View style={styles.detailsRow}>
                 <FontAwesome name="graduation-cap" size={18} color="#333" />
@@ -391,12 +386,14 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
             )}
           </View>
         ))}
-        
+
+        {/* Initial Price */}
         <View style={styles.totalSection}>
           <Text style={styles.totalTitle}>Preț inițial</Text>
           <Text style={styles.totalPrice}>RON {routePrice}</Text>
         </View>
 
+        {/* Additional Fees */}
         <View style={styles.section}>
           <Text style={styles.sectionTitle}>Taxe suplimentare</Text>
           <View style={styles.detailsRow}>
@@ -405,14 +402,34 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
           </View>
         </View>
 
+        {/* Total Price */}
         <View style={styles.totalSection}>
           <Text style={styles.totalTitle}>Total de plată</Text>
           <Text style={styles.totalPrice}>RON {totalPrice}</Text>
         </View>
-        
-        <TouchableOpacity style={styles.payButton} disabled={!loading} onPress={openPaymentSheet}>
-          <Text style={styles.payButtonText}>Plată cu cardul</Text>
+
+        {/* Payment Button */}
+        <TouchableOpacity
+          style={[styles.button, styles.payButton]}
+          disabled={loadingPayment || !totalPrice}
+          onPress={handlePayment}
+        >
+          <Text style={styles.buttonText}>
+            {loadingPayment ? 'Procesare...' : 'Plată cu cardul'}
+          </Text>
           <MaterialCommunityIcons name="credit-card-outline" size={24} color="white" />
+        </TouchableOpacity>
+
+        {/* Reservation Button */}
+        <TouchableOpacity
+          style={[styles.button, styles.reserveButton]}
+          disabled={loadingReservation || !totalPrice}
+          onPress={handleReservation}
+        >
+          <Text style={styles.buttonText}>
+            {loadingReservation ? 'Rezervare...' : 'Rezervă bilet'}
+          </Text>
+          <MaterialCommunityIcons name="ticket-outline" size={24} color="white" />
         </TouchableOpacity>
       </ScrollView>
     </StripeProvider>
@@ -424,7 +441,7 @@ export default CheckoutPage;
 const styles = StyleSheet.create({
   container: {
     flex: 1,
-    backgroundColor: '#F0F0F0', // fundal gri deschis
+    backgroundColor: '#F0F0F0',
   },
   headerText: {
     textAlign: 'center',
@@ -435,17 +452,14 @@ const styles = StyleSheet.create({
     color: '#333',
   },
   section: {
-    backgroundColor: '#FFFFFF', // fundal alb pentru secțiune
+    backgroundColor: '#FFFFFF',
     borderRadius: 12,
     padding: 20,
     marginHorizontal: 20,
     marginBottom: 20,
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1, // umbră mai subtilă
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
   },
@@ -488,18 +502,15 @@ const styles = StyleSheet.create({
     margin: 8,
   },
   totalSection: {
-    backgroundColor: '#FFFFFF', // fundal alb pentru secțiunea totală
+    backgroundColor: '#FFFFFF',
     borderRadius: 10,
     padding: 20,
     marginHorizontal: 20,
     marginBottom: 20,
     alignItems: 'center',
     shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.1, // umbră mai subtilă
+    shadowOffset: { width: 0, height: 2 },
+    shadowOpacity: 0.1,
     shadowRadius: 2,
     elevation: 3,
   },
@@ -515,27 +526,24 @@ const styles = StyleSheet.create({
     color: '#000',
     marginTop: 10,
   },
-  payButton: {
+  button: {
     flexDirection: 'row',
     justifyContent: 'space-between',
     alignItems: 'center',
-    backgroundColor: '#1E90FF', // fundal albastru deschis
+    padding: 15,
     borderRadius: 10,
-    padding: 20,
     marginHorizontal: 20,
     marginBottom: 15,
-    shadowColor: '#000',
-    shadowOffset: {
-      width: 0,
-      height: 2,
-    },
-    shadowOpacity: 0.2,
-    shadowRadius: 2,
-    elevation: 3,
   },
-  payButtonText: {
+  payButton: {
+    backgroundColor: '#1E90FF', // Blue for payment
+  },
+  reserveButton: {
+    backgroundColor: '#32CD32', // Green for reservation
+  },
+  buttonText: {
+    color: 'white',
     fontSize: 16,
-    fontWeight: 'normal',
-    color: '#fff', // culoarea textului alb
+    fontWeight: 'bold',
   },
 });

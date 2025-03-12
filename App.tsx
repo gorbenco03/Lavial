@@ -31,6 +31,7 @@ export interface TravelDetails {
   toStation: string;
   departureTime: string;
   arrivalTime: string;
+  
 }
 
 export interface RouteParams {
@@ -58,6 +59,7 @@ export interface TravelDetailsType {
   outbound: TravelDetails | undefined;
   return: TravelDetails | undefined;
   totalPrice : number
+  
 }
 
 const Stack = createNativeStackNavigator<RootStackParamList>();
