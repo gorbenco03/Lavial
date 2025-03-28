@@ -2,7 +2,7 @@
   "expo": {
     "name": "Lavial",
     "slug": "Lavial",
-    "version": "3.0.7",
+    "version": "4.0.0",
     "plugins": [
       [
         "expo-font",
