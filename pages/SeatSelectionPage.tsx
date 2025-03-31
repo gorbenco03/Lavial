@@ -13,6 +13,7 @@ import {
 } from 'react-native';
 import { MaterialIcons } from '@expo/vector-icons';
 import { LinearGradient } from 'expo-linear-gradient';
+import { EXPO_SERVER_URL } from '@env';
 
 const { width } = Dimensions.get('window');
 
@@ -89,7 +90,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
       const dateStr = formatDateForBackend(outboundDate);
       const queryParams = `?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${dateStr}`;
 
-      const response = await fetch(`http://localhost:3006/available-seats${queryParams}`);
+      const response = await fetch(`${EXPO_SERVER_URL}/seats/available-seats${queryParams}`);
       if (!response.ok) {
         throw new Error('Failed to fetch outbound seats');
       }
@@ -123,7 +124,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
       const dateStr = formatDateForBackend(returnDate);
       const queryParams = `?from=${encodeURIComponent(to)}&to=${encodeURIComponent(from)}&date=${dateStr}`;
 
-      const response = await fetch(`http://localhost:3006/available-seats${queryParams}`);
+      const response = await fetch(`${EXPO_SERVER_URL}/seats/available-seats${queryParams}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch return seats');
@@ -236,7 +237,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
         };
       });
 
-      const reserveOutbound = await fetch('http://localhost:3006/reserve-seats-temp', {
+      const reserveOutbound = await fetch(`${EXPO_SERVER_URL}/seats/reserve-seats-temp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -244,7 +245,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
           to,
           date: dateStr,
           seats: outboundOccupants, // trimitem array de obiecte cu occupant info
-          expiresIn: 15 * 60,       // 15 minute
+          expiresIn: 10 * 60,       // 15 minute
         }),
       });
       if (!reserveOutbound.ok) {
@@ -268,7 +269,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
           };
         });
 
-        const reserveReturn = await fetch('http://localhost:3006/reserve-seats-temp', {
+        const reserveReturn = await fetch(`${EXPO_SERVER_URL}/seats/reserve-seats-temp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

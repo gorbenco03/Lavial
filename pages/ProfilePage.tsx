@@ -3,10 +3,11 @@ import React, { useEffect, useState } from 'react';
 import { ActivityIndicator, Text, View } from 'react-native';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { jwtDecode } from 'jwt-decode';
-import { LinearGradient } from 'expo-linear-gradient';
+
 
 import AuthPage from '../components/profile/AuthPage';
 import ProfileDisplay from '../components/profile/ProfileDisplay';
+import { EXPO_SERVER_URL } from '@env';
 
 export interface UserData {
   surname: string;
@@ -26,7 +27,7 @@ const ProfilePage = () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (token) {
-        const res = await fetch('http://localhost:3008/user-profile', {
+        const res = await fetch(`${EXPO_SERVER_URL}/auth/user-profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -73,10 +74,10 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <LinearGradient colors={['#F0F0F0', '#F0F0F0']} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
+      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}> 
         <ActivityIndicator size="large" color="#4158D0" />
         <Text>Se încarcă...</Text>
-      </LinearGradient>
+        </View>
     );
   }
 

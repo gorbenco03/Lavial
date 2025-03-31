@@ -17,7 +17,7 @@ import {
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-
+import { EXPO_SERVER_URL } from '@env';
 // Extindem interfața de props pentru a include și navigation (presupunând integrarea cu React Navigation)
 interface AuthPageProps {
   onLoginSuccess: () => void;
@@ -46,7 +46,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, navigation }) => {
   // Funcție pentru trimiterea codului de verificare prin email
   const sendVerificationCode = async (emailAddress: string) => {
     try {
-      const response = await fetch('http://localhost:3008/sendVerificationCode', {
+      const response = await fetch(`${EXPO_SERVER_URL}/auth/sendVerificationCode`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailAddress }),
@@ -71,7 +71,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, navigation }) => {
       return;
     }
     try {
-      const response = await fetch('http://localhost:3008/verifyCode', {
+      const response = await fetch(`${EXPO_SERVER_URL}/auth/verifyCode`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailForVerification, code: verificationCode }),
@@ -98,7 +98,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, navigation }) => {
     }
     setProcessing(true);
     try {
-      const response = await fetch('http://localhost:3008/login', {
+      const response = await fetch(`${EXPO_SERVER_URL}/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -135,7 +135,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, navigation }) => {
     }
     setProcessing(true);
     try {
-      const response = await fetch('http://localhost:3008/register', {
+      const response = await fetch(`${EXPO_SERVER_URL}/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, surname, isStudent, studentIdSerial, email, password, phone }),

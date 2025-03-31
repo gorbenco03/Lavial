@@ -17,6 +17,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { UserData } from '../../pages/ProfilePage';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import TravelList from './TravelList';
+import { EXPO_SERVER_URL } from '@env';
 
 
 const { width } = Dimensions.get('window');
@@ -63,7 +64,7 @@ const ProfileDisplay = ({ user, onLogout } : any ) => {
   const saveChanges = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch('http://localhost:3008/update-profile', {
+      const response = await fetch(`${EXPO_SERVER_URL}/auth/update-profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

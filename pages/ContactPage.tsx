@@ -12,7 +12,8 @@ import {
   ActivityIndicator,
 } from 'react-native';
 import { Ionicons, FontAwesome5 } from '@expo/vector-icons';
-import { LinearGradient } from 'expo-linear-gradient';
+
+import { EXPO_SERVER_URL } from '@env';
 
 const ContactPage = () => {
   const [formData, setFormData] = useState({
@@ -36,7 +37,7 @@ const ContactPage = () => {
   
     try {
       // Trimitem datele la back-end
-      const response = await fetch('http://localhost:3009/contact', {
+      const response = await fetch(`${EXPO_SERVER_URL}/qr/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),
@@ -139,18 +140,13 @@ const ContactPage = () => {
             onPress={handleSubmit}
             disabled={submitting}
           >
-            <LinearGradient
-              colors={['#3D87E4', '#6AA9FF']}
-              style={styles.gradientButton}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
+           
               {submitting ? (
                 <ActivityIndicator size="small" color="#FFFFFF" />
               ) : (
                 <Text style={styles.buttonText}>Trimite</Text>
               )}
-            </LinearGradient>
+    
           </TouchableOpacity>
         </View>
 
