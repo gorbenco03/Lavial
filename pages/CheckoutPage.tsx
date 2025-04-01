@@ -438,7 +438,7 @@ const navigateToFinalPage = async () => {
 
   return (
     <StripeProvider
-      publishableKey="pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6"
+      publishableKey="pk_live_51OFFW7L6XuzedjFNJe7O04UUU8PXg1c5OWpkH7Yui9Jork2L3OmwozH02dZZZFAW06csaHwhVpTWLXnhallwuWpX004LqvSxK5"
       urlScheme={EXPO_STRIPE_RETURN_URL || 'your-url-scheme'}
       merchantIdentifier="merchant.com.lavial"
     >
