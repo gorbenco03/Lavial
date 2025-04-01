@@ -2,6 +2,7 @@ import React, { useState, useEffect} from 'react';
 import { View, TextInput, Text, StyleSheet, FlatList, Modal, Button, TouchableOpacity, Switch, ScrollView, StatusBar } from 'react-native';
 import { Feather, Ionicons, MaterialIcons } from '@expo/vector-icons';
 import Checkbox from 'expo-checkbox';
+import { EXPO_SERVER_URL } from '@env';
 import DropDownPicker from 'react-native-dropdown-picker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 const SecondPage = ({ navigation, route }: any) => {
@@ -74,7 +75,7 @@ const SecondPage = ({ navigation, route }: any) => {
       try {
         const token = await AsyncStorage.getItem('authToken');
         if (token) {
-          const response = await fetch('http://localhost:3008/user-profile', {
+          const response = await fetch(`https://lavial.icu/auth/user-profile`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,

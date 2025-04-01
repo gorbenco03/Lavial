@@ -70,7 +70,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
   const handleCancelReservation = async () => {
     try {
       // Anulează rezervarea pentru tur
-      const cancelOutbound = await fetch(`${EXPO_SERVER_URL}/seats/cancel-reservation`, {
+      const cancelOutbound = await fetch(`https://lavial.icu/seats/cancel-reservation`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reservationId: outboundReservationId }),
@@ -82,7 +82,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
 
       // Anulează rezervarea pentru retur (dacă există)
       if (returnReservationId) {
-        const cancelReturn = await fetch(`${EXPO_SERVER_URL}/seats/cancel-reservation`, {
+        const cancelReturn = await fetch(`https://lavial.icu/seats/cancel-reservation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reservationId: returnReservationId }),
@@ -112,7 +112,7 @@ const CheckoutPage: React.FC<CheckoutProps> = ({ navigation, route }) => {
         returnDate,
         passengers,
       });
-      const response = await fetch(`${EXPO_SERVER_URL}/tickets/get-price`, {
+      const response = await fetch(`https://lavial.icu/tickets/get-price`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -158,7 +158,7 @@ setReturnSinglePrice(returnSinglePrice);
     try {
       const totalAmount = totalPrice * 100; // convert RON -> cents
       console.log("Fetching payment sheet params with totalAmount:", totalAmount);
-      const response = await fetch(`${EXPO_SERVER_URL}/payments/payment-sheet`, {
+      const response = await fetch(`https://lavial.icu/payments/payment-sheet`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -255,7 +255,7 @@ const navigateToFinalPage = async () => {
     try {
       // 1. Confirmă rezervarea temporară pentru tur
       if (outboundReservationId) {
-        const confirmOutbound = await fetch(`${EXPO_SERVER_URL}/seats/confirm-reservation`, {
+        const confirmOutbound = await fetch(`https://lavial.icu/seats/confirm-reservation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reservationId: outboundReservationId }),
@@ -268,7 +268,7 @@ const navigateToFinalPage = async () => {
 
       // 2. Confirmă rezervarea temporară pentru retur (dacă există)
       if (returnDate && returnReservationId) {
-        const confirmReturn = await fetch(`${EXPO_SERVER_URL}/seats/confirm-reservation`, {
+        const confirmReturn = await fetch(`https://lavial.icu/seats/confirm-reservation`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ reservationId: returnReservationId }),
@@ -438,7 +438,7 @@ const navigateToFinalPage = async () => {
 
   return (
     <StripeProvider
-      publishableKey={EXPO_STRIPE_PUBLISHABLE_KEY}
+      publishableKey="pk_test_51OFFW7L6XuzedjFN3xvFwL6LgwZRwVUDlQmxNCkH8LEMAMDPGudlftiKO8M7GRt2MLbBodBlvvfu960qUIL4d3Ue00tjm9J6v6"
       urlScheme={EXPO_STRIPE_RETURN_URL || 'your-url-scheme'}
       merchantIdentifier="merchant.com.lavial"
     >

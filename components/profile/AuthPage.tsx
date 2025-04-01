@@ -46,7 +46,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, navigation }) => {
   // Funcție pentru trimiterea codului de verificare prin email
   const sendVerificationCode = async (emailAddress: string) => {
     try {
-      const response = await fetch(`${EXPO_SERVER_URL}/auth/sendVerificationCode`, {
+      const response = await fetch(`https://lavial.icu/auth/sendVerificationCode`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailAddress }),
@@ -71,7 +71,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, navigation }) => {
       return;
     }
     try {
-      const response = await fetch(`${EXPO_SERVER_URL}/auth/verifyCode`, {
+      const response = await fetch(`https://lavial.icu/auth/verifyCode`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email: emailForVerification, code: verificationCode }),
@@ -98,7 +98,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, navigation }) => {
     }
     setProcessing(true);
     try {
-      const response = await fetch(`${EXPO_SERVER_URL}/auth/login`, {
+      const response = await fetch(`https://lavial.icu/auth/login`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ email, password }),
@@ -135,7 +135,7 @@ const AuthPage: React.FC<AuthPageProps> = ({ onLoginSuccess, navigation }) => {
     }
     setProcessing(true);
     try {
-      const response = await fetch(`${EXPO_SERVER_URL}/auth/register`, {
+      const response = await fetch(`https://lavial.icu/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name, surname, isStudent, studentIdSerial, email, password, phone }),

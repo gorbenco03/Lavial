@@ -67,7 +67,7 @@ const TravelList = () => {
     try {
       setDownloading(travelId);
       const token = await AsyncStorage.getItem('authToken');
-      const res = await fetch(`${EXPO_SERVER_URL}/ticket/${travelId}`, {
+      const res = await fetch(`https://lavial.icu/auth/ticket/${travelId}`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -106,7 +106,7 @@ const TravelList = () => {
     try {
       setLoading(true);
       const token = await AsyncStorage.getItem('authToken');
-      const res = await fetch(`${EXPO_SERVER_URL}/auth/user-travels`, {
+      const res = await fetch(`https://lavial.icu/auth/user-travels`, {
         headers: { Authorization: `Bearer ${token}` },
       });
 
@@ -163,8 +163,9 @@ const TravelList = () => {
             <Text style={styles.city}>{travel.from}</Text>
           </View>
           <View style={styles.journeyLine}>
-            <View style={styles.line} />   </View>
-                 
+            <View style={styles.line} />
+          </View>
+          
           <View style={styles.stationInfo}>
             <Text style={styles.time}>{travel.arrivalTime}</Text>
             <View style={styles.stationDot} />

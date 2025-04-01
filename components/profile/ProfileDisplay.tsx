@@ -64,7 +64,7 @@ const ProfileDisplay = ({ user, onLogout } : any ) => {
   const saveChanges = async () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
-      const response = await fetch(`${EXPO_SERVER_URL}/auth/update-profile`, {
+      const response = await fetch(`https://lavial.icu/auth/update-profile`, {
         method: 'PUT',
         headers: {
           'Content-Type': 'application/json',

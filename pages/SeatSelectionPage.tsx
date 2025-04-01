@@ -90,7 +90,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
       const dateStr = formatDateForBackend(outboundDate);
       const queryParams = `?from=${encodeURIComponent(from)}&to=${encodeURIComponent(to)}&date=${dateStr}`;
 
-      const response = await fetch(`${EXPO_SERVER_URL}/seats/available-seats${queryParams}`);
+      const response = await fetch(`https://lavial.icu/seats/available-seats${queryParams}`);
       if (!response.ok) {
         throw new Error('Failed to fetch outbound seats');
       }
@@ -124,7 +124,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
       const dateStr = formatDateForBackend(returnDate);
       const queryParams = `?from=${encodeURIComponent(to)}&to=${encodeURIComponent(from)}&date=${dateStr}`;
 
-      const response = await fetch(`${EXPO_SERVER_URL}/seats/available-seats${queryParams}`);
+      const response = await fetch(`https://lavial.icu/seats/available-seats${queryParams}`);
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || 'Failed to fetch return seats');
@@ -237,7 +237,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
         };
       });
 
-      const reserveOutbound = await fetch(`${EXPO_SERVER_URL}/seats/reserve-seats-temp`, {
+      const reserveOutbound = await fetch(`https://lavial.icu/seats/reserve-seats-temp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -269,7 +269,7 @@ const SeatSelectionPage: React.FC<SeatSelectionPageProps> = ({ navigation, route
           };
         });
 
-        const reserveReturn = await fetch(`${EXPO_SERVER_URL}/seats/reserve-seats-temp`, {
+        const reserveReturn = await fetch(`https://lavial.icu/seats/reserve-seats-temp`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({

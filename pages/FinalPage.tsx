@@ -7,13 +7,14 @@ import {
   ScrollView,
 } from 'react-native';
 import LottieView from 'lottie-react-native';
-import { LinearGradient } from 'expo-linear-gradient';
+
 import { NativeStackScreenProps } from '@react-navigation/native-stack';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { v4 as uuidv4 } from 'uuid';
 import CryptoJS from 'crypto-js';
 
 import { RootStackParamList } from '../App';
+import { EXPO_SERVER_URL } from '@env';
 
 type FinalProps = NativeStackScreenProps<RootStackParamList, 'Final'>;
 
@@ -55,11 +56,7 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
     // atunci putem "împărți" locurile pe pasageri în ordinea indexului:
     const { selectedOutboundSeats = [], selectedReturnSeats = [], passengers = [] } = travelDetails;
 
-    // Dacă vrei un loc per pasager, mapezi:
-    //   passenger[0] -> selectedOutboundSeats[0],
-    //   passenger[1] -> selectedOutboundSeats[1], ș.a.m.d.
-    // E necesar să verifici lungimea array-urilor astfel încât să nu depășești capătul
-
+   
     // - Bilete TUR:
     selectedOutboundSeats.forEach((seatNumber, idx) => {
       // Fiecare seatNumber -> 1 bilet
@@ -122,23 +119,8 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
       });
     }
 
-    //  [B] Dacă ai deja occupant info:
-    //  ex. travelDetails.outboundOccupants = [
-    //    { seatNumber: 7, passengerName: "Ion", passengerSurname: "Popescu", phone: "..." },
-    //    { seatNumber: 8, passengerName: "Maria", passengerSurname: "Ionescu", phone: "..." }
-    //  ]
-    //  atunci doar parcurgi direct occupant array (fără maparea de index):
-    //
-    //  travelDetails.outboundOccupants.forEach( occupant => {
-    //    const ticketObj = {
-    //      seat: occupant.seatNumber,
-    //      name: occupant.passengerName,
-    //      ...
-    //    }
-    //    qrDataArray.push(JSON.stringify(ticketObj));
-    //  });
-    //
-    //  Analog pt. retur.
+   
+    
 
     setQrData(qrDataArray);
   }, [travelDetails, userIdLoaded]);
@@ -170,7 +152,7 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
       const requestData = JSON.stringify({ qrData: encryptedDataArray, email, userId });
       console.log('Trimite către server:', requestData);
 
-      const response = await fetch(`http://localhost:3009/send-qr`, {
+      const response = await fetch(`https://lavial.icu/qr/send-qr`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -220,14 +202,9 @@ const FinalPage: React.FC<FinalProps> = ({ navigation, route }) => {
           </Text>
 
           <TouchableOpacity style={styles.homeButton} onPress={goToHome}>
-            <LinearGradient
-              colors={['#3D87E4', '#6AA9FF']}
-              style={styles.gradientButton}
-              start={{ x: 0, y: 0 }}
-              end={{ x: 1, y: 0 }}
-            >
+            
               <Text style={styles.buttonText}>Mergi la pagina principală</Text>
-            </LinearGradient>
+      
           </TouchableOpacity>
         </View>
       </ScrollView>

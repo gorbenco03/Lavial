@@ -4,6 +4,7 @@ import { Feather, MaterialIcons } from '@expo/vector-icons';
 import DateTimePicker from '@react-native-community/datetimepicker';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { EXPO_SERVER_URL } from '@env';
+
 const cities = [
   'Chișinău', 'Huși', 'Tecuci', 'Adjud', 'Onești',
   'Brașov', 'Alba Iulia', 'Sibiu', 'Deva', 'Lugoj', 'Timișoara'
@@ -45,7 +46,7 @@ const FirstPage = ({ navigation }: any) => {
     const token = await AsyncStorage.getItem('authToken');
     if (token) {
       // Verificăm validitatea token-ului
-      const response = await fetch(`${EXPO_SERVER_URL}/verify-token`, {
+      const response = await fetch(`https://lavial.icu/auth/verify-token`, {
         method: 'GET',
         headers: {
           'Authorization': `Bearer ${token}`
@@ -81,7 +82,7 @@ const FirstPage = ({ navigation }: any) => {
         const token = await AsyncStorage.getItem('authToken');
         if (token) {
           // Obține informațiile utilizatorului folosind token-ul
-          const response = await fetch(`${EXPO_SERVER_URL}/user-info`, {
+          const response = await fetch(`https://lavial.icu/auth/user-info`, {
             method: 'GET',
             headers: {
               'Authorization': `Bearer ${token}`,
@@ -116,7 +117,7 @@ const FirstPage = ({ navigation }: any) => {
         const day = String(date.getUTCDate()).padStart(2, '0');
         return `${year}-${month}-${day}`; // "YYYY-MM-DD" în UTC
       };
-      const response = await fetch(`${EXPO_SERVER_URL}/check-reservation-status`, {
+      const response = await fetch(`https://lavial.icu/reservations/check-reservation-status`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -143,7 +144,7 @@ const FirstPage = ({ navigation }: any) => {
         }
   
         // Dacă rezervările nu sunt oprite, continuăm cu verificarea prețului
-        const response = await fetch(`${EXPO_SERVER_URL}/get-price`, {
+        const response = await fetch(`https://lavial.icu/tickets/get-price`, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -240,7 +241,7 @@ const FirstPage = ({ navigation }: any) => {
   const updateFilteredCities = async () => {
     if (from) {
       try {
-        const response = await fetch(`${EXPO_SERVER_URL}/get-routes`);
+        const response = await fetch(`https://lavial.icu/tickets/get-routes`);
         const routes = await response.json();
 
         if (routes[from]) {

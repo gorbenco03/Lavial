@@ -8,6 +8,7 @@ import { jwtDecode } from 'jwt-decode';
 import AuthPage from '../components/profile/AuthPage';
 import ProfileDisplay from '../components/profile/ProfileDisplay';
 import { EXPO_SERVER_URL } from '@env';
+import { LinearGradient } from 'expo-linear-gradient';
 
 export interface UserData {
   surname: string;
@@ -27,7 +28,7 @@ const ProfilePage = () => {
     try {
       const token = await AsyncStorage.getItem('authToken');
       if (token) {
-        const res = await fetch(`${EXPO_SERVER_URL}/auth/user-profile`, {
+        const res = await fetch(`https://lavial.icu/auth/user-profile`, {
           headers: {
             Authorization: `Bearer ${token}`,
           },
@@ -74,10 +75,11 @@ const ProfilePage = () => {
 
   if (loading) {
     return (
-      <View style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}> 
+      <LinearGradient colors={['#F0F0F0', '#F0F0F0']} style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}>
         <ActivityIndicator size="large" color="#4158D0" />
         <Text>Se încarcă...</Text>
-        </View>
+        </LinearGradient>
+      
     );
   }
 

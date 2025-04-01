@@ -37,7 +37,7 @@ const ContactPage = () => {
   
     try {
       // Trimitem datele la back-end
-      const response = await fetch(`${EXPO_SERVER_URL}/qr/contact`, {
+      const response = await fetch(`https://lavial.icu/qr/contact`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(formData),

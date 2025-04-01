@@ -1,3 +1,4 @@
+import { EXPO_SERVER_URL } from '@env';
 import React, { useState } from 'react';
 import {
   View,
@@ -32,7 +33,7 @@ const RegisterScreen = ({ navigation }: any) => {
 
     setProcessing(true);
     try {
-      const response = await fetch('http://localhost:3008/register', {
+      const response = await fetch(`https://lavial.icu/auth/register`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
