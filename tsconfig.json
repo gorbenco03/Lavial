@@ -1,23 +1,25 @@
 {
+  "extends": "expo/tsconfig.base",
   "compilerOptions": {
-    "target": "es5",
-    "module": "commonjs",
     "strict": true,
-    "jsx": "react",
     "baseUrl": "./",
     "paths": {
-      "@env": ["@types/env.d.ts"]
+      "@env": [
+        "env.d.ts"
+      ]
     },
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "resolveJsonModule": true,
+    "moduleResolution": "node"
   },
   "include": [
-    "./*.ts",
-    "./*.tsx",
-    "./pages/**/*.ts",
-    "./pages/**/*.tsx"
+    "**/*.ts",
+    "**/*.tsx",
+    ".expo/types/**/*.ts",
+    "expo-env.d.ts"
   ],
   "exclude": [
     "node_modules"
-  ],
-  "extends": "./node_modules/expo/tsconfig.base"
+  ]
 }

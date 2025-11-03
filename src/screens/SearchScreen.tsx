@@ -179,7 +179,7 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
                   mode="date"
                   display={Platform.OS === 'ios' ? 'inline' : 'default'}
                   minimumDate={todayStart}
-                  onChange={(_, selected) => {
+                  onChange={(_: any, selected: string | number | Date) => {
                     setShowPicker(false);
                     if (selected) {
                       const picked = new Date(selected);

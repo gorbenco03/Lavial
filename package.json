@@ -83,5 +83,9 @@
     "metro-react-native-babel-preset": "^0.77.0",
     "typescript": "~5.3.3"
   },
-  "private": true
+  "private": true,
+  "engines": {
+    "node": ">=18.0.0",
+    "npm": ">=8.0.0"
+  }
 }
