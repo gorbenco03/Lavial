@@ -1,4 +1,5 @@
-module.exports = {
+module.exports = ({ config }) => ({
+  ...config,
   expo: {
     name: "Lavial",
     slug: "Lavial",
@@ -15,6 +16,17 @@ module.exports = {
             "./assets/fonts/ClashGrotesk-Regular.otf",
             "./assets/fonts/ClashGrotesk-Semibold.otf"
           ]
+        }
+      ],
+      [
+        "expo-build-properties",
+        {
+          android: {
+            compileSdkVersion: 35,
+            targetSdkVersion: 35,
+            buildToolsVersion: "35.0.0",
+            minSdkVersion: 24
+          }
         }
       ]
     ],
@@ -51,11 +63,7 @@ module.exports = {
         "READ_MEDIA_VIDEO"
       ],
       package: "com.yourapp.bundle",
-      versionCode: 42,
-      minSdkVersion: 24,
-      compileSdkVersion: 35,
-      targetSdkVersion: 35,
-      buildToolsVersion: "35.0.0"
+      versionCode: 46
     },
     web: {
       favicon: "./assets/icon.png"
@@ -66,4 +74,4 @@ module.exports = {
       }
     }
   }
-};
+});
