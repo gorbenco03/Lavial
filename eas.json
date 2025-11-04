@@ -19,8 +19,6 @@
     },
     "production": {
       "autoIncrement": true,
-      "node": "20.8",
-      "prebuild": "./eas-hooks/eas-build-pre-install.sh",
       "android": {
         "buildType": "app-bundle",
         "image": "latest",
@@ -28,6 +26,9 @@
       },
       "ios": {
         "image": "latest"
+      },
+      "hooks": {
+        "prebuild": "./eas-hooks/eas-build-pre-install.sh"
       },
       "env": {
         "EXPO_SERVER_URL": "https://lavial-backend-production.up.railway.app/api",
