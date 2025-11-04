@@ -27,9 +27,6 @@
       "ios": {
         "image": "latest"
       },
-      "hooks": {
-        "prebuild": "./eas-hooks/eas-build-pre-install.sh"
-      },
       "env": {
         "EXPO_SERVER_URL": "https://lavial-backend-production.up.railway.app/api",
         "ANDROID_COMPILE_SDK_VERSION": "35",
@@ -40,5 +37,8 @@
   },
   "submit": {
     "production": {}
+  },
+  "hooks": {
+    "prebuild": "./eas-hooks/eas-build-pre-install.sh"
   }
 }
