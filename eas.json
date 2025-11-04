@@ -20,7 +20,7 @@
     "production": {
       "autoIncrement": true,
       "ios": {
-        "image": "macos-15"
+        "image": "latest"
       },
       "env": {
         "EXPO_SERVER_URL": "https://lavial-backend-production.up.railway.app/api"
