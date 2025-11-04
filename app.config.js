@@ -1,69 +1,69 @@
 module.exports = {
-    expo: {
-      name: "Lavial",
-      slug: "Lavial",
-      version: "5.0.0",
-      plugins: [
-        [
-          "expo-font",
-          {
-            fonts: [
-              "./assets/fonts/ClashGrotesk-Bold.otf",
-              "./assets/fonts/ClashGrotesk-Extralight.otf",
-              "./assets/fonts/ClashGrotesk-Light.otf",
-              "./assets/fonts/ClashGrotesk-Medium.otf",
-              "./assets/fonts/ClashGrotesk-Regular.otf",
-              "./assets/fonts/ClashGrotesk-Semibold.otf"
-            ]
-          }
-        ]
-      ],
-      orientation: "portrait",
+  expo: {
+    name: "Lavial",
+    slug: "Lavial",
+    version: "5.0.0",
+    plugins: [
+      [
+        "expo-font",
+        {
+          fonts: [
+            "./assets/fonts/ClashGrotesk-Bold.otf",
+            "./assets/fonts/ClashGrotesk-Extralight.otf",
+            "./assets/fonts/ClashGrotesk-Light.otf",
+            "./assets/fonts/ClashGrotesk-Medium.otf",
+            "./assets/fonts/ClashGrotesk-Regular.otf",
+            "./assets/fonts/ClashGrotesk-Semibold.otf"
+          ]
+        }
+      ]
+    ],
+    orientation: "portrait",
+    icon: "./assets/icon.png",
+    userInterfaceStyle: "light",
+    scheme: "lavialapp",
+    splash: {
+      image: "./assets/splashScreen.png",
+      resizeMode: "contain",
+      backgroundColor: "#ffffff"
+    },
+    assetBundlePatterns: ["**/*"],
+    ios: {
+      supportsTablet: true,
+      bundleIdentifier: "com.lavial.bundle",
       icon: "./assets/icon.png",
-      userInterfaceStyle: "light",
-      scheme: "lavialapp",
-      splash: {
-        image: "./assets/splashScreen.png",
-        resizeMode: "contain",
+      buildNumber: "15"
+    },
+    android: {
+      adaptiveIcon: {
+        foregroundImage: "./assets/ic_launcher_foreground.png",
         backgroundColor: "#ffffff"
       },
-      assetBundlePatterns: ["**/*"],
-      ios: {
-        supportsTablet: true,
-        bundleIdentifier: "com.lavial.bundle",
-        icon: "./assets/icon.png",
-        buildNumber: "15"
-      },
-      android: {
-        adaptiveIcon: {
-          foregroundImage: "./assets/ic_launcher_foreground.png",
-          backgroundColor: "#ffffff"
-        },
-        icon: "./assets/icon.png",
-        permissions: [
-          "CAMERA",
-          "READ_EXTERNAL_STORAGE",
-          "WRITE_EXTERNAL_STORAGE",
-          "ACCESS_FINE_LOCATION",
-          "ACCESS_COARSE_LOCATION",
-          "POST_NOTIFICATIONS",
-          "READ_MEDIA_IMAGES",
-          "READ_MEDIA_VIDEO"
-        ],
-        package: "com.yourapp.bundle",
-        versionCode: 39,
-        minSdkVersion: 24,
-        compileSdkVersion: 35,
-        targetSdkVersion: 35,
-        buildToolsVersion: "35.0.0"
-      },
-      web: {
-        favicon: "./assets/icon.png"
-      },
-      extra: {
-        eas: {
-          projectId: "ba7a760e-a1fd-4332-913a-8342388e81ae"
-        }
+      icon: "./assets/icon.png",
+      permissions: [
+        "CAMERA",
+        "READ_EXTERNAL_STORAGE",
+        "WRITE_EXTERNAL_STORAGE",
+        "ACCESS_FINE_LOCATION",
+        "ACCESS_COARSE_LOCATION",
+        "POST_NOTIFICATIONS",
+        "READ_MEDIA_IMAGES",
+        "READ_MEDIA_VIDEO"
+      ],
+      package: "com.yourapp.bundle",
+      versionCode: 42,
+      minSdkVersion: 24,
+      compileSdkVersion: 35,
+      targetSdkVersion: 35,
+      buildToolsVersion: "35.0.0"
+    },
+    web: {
+      favicon: "./assets/icon.png"
+    },
+    extra: {
+      eas: {
+        projectId: "ba7a760e-a1fd-4332-913a-8342388e81ae"
       }
     }
-  };
+  }
+};
