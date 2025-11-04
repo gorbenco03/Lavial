@@ -2,7 +2,7 @@
   "expo": {
     "name": "Lavial",
     "slug": "Lavial",
-    "version": "4.0.3",
+    "version": "5.0.0",
     "plugins": [
       [
         "expo-font",
@@ -34,7 +34,7 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.lavial.bundle",
       "icon": "./assets/icon.png",
-      "buildNumber": "14"
+      "buildNumber": "15"
     },
     "android": {
       "adaptiveIcon": {
@@ -53,7 +53,7 @@
         "READ_MEDIA_VIDEO"
       ],
       "package": "com.yourapp.bundle",
-      "versionCode": 36,
+      "versionCode": 37,
       "compileSdkVersion": 35,
       "targetSdkVersion": 35,
       "buildToolsVersion": "35.0.0"
