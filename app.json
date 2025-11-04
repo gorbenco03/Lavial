@@ -4,7 +4,6 @@
     "slug": "Lavial",
     "version": "5.0.0",
     "plugins": [
-      "./withTargetSdk35", 
       [
         "expo-font",
         {
