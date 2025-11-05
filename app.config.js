@@ -3,7 +3,7 @@ module.exports = ({ config }) => ({
   expo: {
     name: "Lavial",
     slug: "Lavial",
-    version: "5.0.1",
+    version: "5.0.2",
     plugins: [
       [
         "expo-font",
@@ -44,7 +44,10 @@ module.exports = ({ config }) => ({
       supportsTablet: true,
       bundleIdentifier: "com.lavial.bundle",
       icon: "./assets/icon.png",
-      buildNumber: "15"
+      buildNumber: "15",
+      infoPlist: {
+        NSCameraUsageDescription: "Această aplicație nu folosește camera. Această permisiune este necesară pentru librării externe utilizate în aplicație."
+      }
     },
     android: {
       adaptiveIcon: {
@@ -53,14 +56,9 @@ module.exports = ({ config }) => ({
       },
       icon: "./assets/icon.png",
       permissions: [
-        "CAMERA",
-        "READ_EXTERNAL_STORAGE",
-        "WRITE_EXTERNAL_STORAGE",
         "ACCESS_FINE_LOCATION",
         "ACCESS_COARSE_LOCATION",
-        "POST_NOTIFICATIONS",
-        "READ_MEDIA_IMAGES",
-        "READ_MEDIA_VIDEO"
+        "POST_NOTIFICATIONS"
       ],
       package: "com.yourapp.bundle",
       versionCode: 46
