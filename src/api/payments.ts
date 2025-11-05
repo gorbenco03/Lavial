@@ -30,6 +30,7 @@ export async function fetchPaymentSheetParams(bookingId: string, totalAmount?: n
     }
 
     const responseData = await response.json();
+
     const { paymentIntent, ephemeralKey, customer } = responseData;
 
     if (!paymentIntent || !ephemeralKey || !customer) {

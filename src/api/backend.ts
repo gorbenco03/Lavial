@@ -72,4 +72,82 @@ export const createBooking = async (bookingData: any) => {
   }
 };
 
+// GET /api/routes/:from/:to/student-discount
+export const getRouteStudentDiscount = async (from: City, to: City): Promise<{
+  from: string;
+  to: string;
+  studentDiscount: number | null;
+  hasStudentDiscount: boolean;
+}> => {
+  const url = `${API_URL}/routes/${encodeURIComponent(from)}/${encodeURIComponent(to)}/student-discount`;
+  
+  try {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        return {
+          from,
+          to,
+          studentDiscount: null,
+          hasStudentDiscount: false
+        };
+      }
+      throw new Error('Failed to fetch route student discount');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    // On error, return no discount
+    return {
+      from,
+      to,
+      studentDiscount: null,
+      hasStudentDiscount: false
+    };
+  }
+};
+
+// GET /api/routes/:from/:to/available-days
+export const getRouteAvailableDays = async (from: City, to: City): Promise<{
+  from: string;
+  to: string;
+  availableDaily: boolean;
+  availableDays: number[] | null;
+  availableDayNames: string[];
+}> => {
+  const url = `${API_URL}/routes/${encodeURIComponent(from)}/${encodeURIComponent(to)}/available-days`;
+  
+  try {
+    const response = await fetch(url);
+    
+    if (!response.ok) {
+      if (response.status === 404) {
+        // Route not found, return daily available by default
+        return {
+          from,
+          to,
+          availableDaily: true,
+          availableDays: null,
+          availableDayNames: ['All days']
+        };
+      }
+      throw new Error('Failed to fetch route available days');
+    }
+    
+    const data = await response.json();
+    return data;
+  } catch (error) {
+    // On error, default to daily available
+    return {
+      from,
+      to,
+      availableDaily: true,
+      availableDays: null,
+      availableDayNames: ['All days']
+    };
+  }
+};
+
 

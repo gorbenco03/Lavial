@@ -1,9 +1,9 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Animated, Easing, ScrollView, KeyboardAvoidingView, Modal, FlatList, TextInput, Vibration } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Animated, Easing, ScrollView, KeyboardAvoidingView, Modal, FlatList, TextInput, Vibration, Alert } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
-import DateTimePicker from '@react-native-community/datetimepicker';
-import { getCities, getDestinationsFor } from '../api/backend';
+import { Calendar } from 'react-native-calendars';
+import { getCities, getDestinationsFor, getRouteAvailableDays } from '../api/backend';
 import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/AppNavigator';
 import { gradients, palette, shadow } from '../styles/theme';
@@ -42,6 +42,8 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
   const [to, setTo] = useState('');
   const [date, setDate] = useState<Date>(new Date());
   const [showPicker, setShowPicker] = useState(false);
+  const [availableDays, setAvailableDays] = useState<{ availableDaily: boolean; availableDays: number[] | null } | null>(null);
+  const [loadingDays, setLoadingDays] = useState(false);
 
   // Today (start of day) used to clamp and as minimumDate
   const todayStart = useMemo(() => { const d = new Date(); d.setHours(0,0,0,0); return d; }, []);
@@ -67,6 +69,152 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
       setDestinations([]);
     }
   }, [from]);
+
+  // Helper function to find next available date
+  const findNextAvailableDate = (startDate: Date, availableDaysArray: number[]): Date => {
+    const minAvailableDate = new Date(2025, 10, 20); // November 20, 2025
+    minAvailableDate.setHours(0, 0, 0, 0);
+    
+    // Start from minimum available date if startDate is before it
+    const result = startDate < minAvailableDate ? new Date(minAvailableDate) : new Date(startDate);
+    
+    for (let i = 0; i < 30; i++) { // Check up to 30 days ahead
+      const day = result.getDay();
+      if (availableDaysArray.includes(day) && result >= minAvailableDate) {
+        return result;
+      }
+      result.setDate(result.getDate() + 1);
+    }
+    return result; // Return the date we found (or last checked date)
+  };
+
+  // Check if a date is available
+  const isDateAvailable = (checkDate: Date): boolean => {
+    if (!availableDays) return true; // If no route selected, allow all dates
+    if (availableDays.availableDaily) return true; // If daily available, allow all dates
+    if (!availableDays.availableDays) return true; // Safety check
+    const dayOfWeek = checkDate.getDay();
+    return availableDays.availableDays.includes(dayOfWeek);
+  };
+
+  // Helper function to get day of week from date string (YYYY-MM-DD) - avoids timezone issues
+  const getDayOfWeekFromDateString = (dateString: string): number => {
+    const [year, month, day] = dateString.split('-').map(Number);
+    // Create date in local timezone to avoid UTC conversion issues
+    const dateObj = new Date(year, month - 1, day);
+    return dateObj.getDay();
+  };
+
+  // Generate marked dates for calendar - disable unavailable days
+  const markedDates = useMemo(() => {
+    const marked: any = {};
+    
+    // Mark selected date - use local date string to avoid timezone issues
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    const dateStr = `${year}-${month}-${day}`;
+    marked[dateStr] = { selected: true, selectedColor: '#6366f1' };
+
+    // If route is selected and has restrictions, mark unavailable days
+    if (availableDays && !availableDays.availableDaily && availableDays.availableDays) {
+      // Minimum date for restricted routes (2025-11-20)
+      const minAvailableDate = new Date(2025, 10, 20); // November 20, 2025 (month is 0-indexed)
+      minAvailableDate.setHours(0, 0, 0, 0);
+      const minAvailableDateStr = '2025-11-20';
+      
+      // Generate dates for next 2 years to ensure all dates in calendar are properly marked
+      const today = new Date();
+      today.setHours(0, 0, 0, 0);
+      const endDate = new Date(today);
+      endDate.setFullYear(endDate.getFullYear() + 2); // Extend to 2 years ahead
+
+      const currentDate = new Date(today);
+      
+      while (currentDate <= endDate) {
+        // Use local date string, not ISO string, to avoid timezone issues
+        const year = currentDate.getFullYear();
+        const month = String(currentDate.getMonth() + 1).padStart(2, '0');
+        const day = String(currentDate.getDate()).padStart(2, '0');
+        const dateKey = `${year}-${month}-${day}`;
+        
+        // Calculate day of week from date string (not from Date object to avoid timezone issues)
+        const dayOfWeek = getDayOfWeekFromDateString(dateKey);
+        
+        // Check if date is before minimum available date
+        const isBeforeMinDate = currentDate < minAvailableDate;
+        
+        // Only mark dates that are NOT the selected date
+        if (dateKey !== dateStr) {
+          // If date is before minimum available date, disable it
+          if (isBeforeMinDate) {
+            marked[dateKey] = { 
+              disabled: true, 
+              disableTouchEvent: true,
+              selectable: false,
+              textColor: '#cbd5e1',
+              selected: false
+            };
+          }
+          // If date is on or after minimum date, check if day of week is available
+          else if (!availableDays.availableDays.includes(dayOfWeek)) {
+            marked[dateKey] = { 
+              disabled: true, 
+              disableTouchEvent: true,
+              selectable: false,
+              textColor: '#cbd5e1',
+              selected: false
+            };
+          }
+        }
+        
+        currentDate.setDate(currentDate.getDate() + 1);
+      }
+    }
+
+    return marked;
+  }, [date, availableDays]);
+
+  // Fetch available days when both from and to are selected
+  useEffect(() => {
+    if (from && to) {
+      (async () => {
+        setLoadingDays(true);
+        try {
+          const daysData = await getRouteAvailableDays(from, to);
+          
+          setAvailableDays({
+            availableDaily: daysData.availableDaily,
+            availableDays: daysData.availableDays
+          });
+          
+          // If current date is not available, find next available date
+          if (!daysData.availableDaily && daysData.availableDays) {
+            const minAvailableDate = new Date(2025, 10, 20); // November 20, 2025
+            minAvailableDate.setHours(0, 0, 0, 0);
+            
+            setDate(currentDate => {
+              const currentDay = currentDate.getDay();
+              
+              // Check if current date is before minimum date OR day of week is not available
+              if (currentDate < minAvailableDate || !daysData.availableDays!.includes(currentDay)) {
+                const nextAvailable = findNextAvailableDate(currentDate, daysData.availableDays!);
+                return nextAvailable;
+              }
+              return currentDate;
+            });
+          }
+        } catch (error) {
+          // Default to daily available on error
+          setAvailableDays({ availableDaily: true, availableDays: null });
+        } finally {
+          setLoadingDays(false);
+        }
+      })();
+    } else {
+      setAvailableDays(null);
+    }
+  }, [from, to]);
   const filteredTo = useMemo(
     () => destinations.filter(c => c.toLowerCase().includes(searchTo.toLowerCase())),
     [destinations, searchTo]
@@ -165,29 +313,132 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
                 </Text>
               </TouchableOpacity>
 
+              <View style={{ flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginTop: 12 }}>
               <Text style={styles.label}>Data plecării</Text>
-              <TouchableOpacity style={styles.inputRow} onPress={() => setShowPicker(true)}>
-                <Ionicons name="calendar-outline" size={18} color={palette.textMuted} />
-                <Text style={[styles.input, styles.inputTextOnly]}>
+                {availableDays && !availableDays.availableDaily && availableDays.availableDays && (
+                  <View style={{ flexDirection: 'row', gap: 4, alignItems: 'center' }}>
+                    <Ionicons name="information-circle-outline" size={14} color="#64748b" />
+                    <Text style={styles.availableDaysHint}>
+                      {availableDays.availableDays.map(d => {
+                        const dayNames = ['D', 'L', 'Ma', 'Mi', 'J', 'V', 'S'];
+                        return dayNames[d];
+                      }).join(', ')}
+                    </Text>
+                  </View>
+                )}
+              </View>
+              <TouchableOpacity style={styles.inputRow} onPress={() => setShowPicker(true)} disabled={!from || !to}>
+                <Ionicons name="calendar-outline" size={18} color={(!from || !to) ? '#cbd5e1' : palette.textMuted} />
+                <Text style={[styles.input, styles.inputTextOnly, { color: (!from || !to) ? '#cbd5e1' : '#0f172a' }]}>
                   {new Intl.DateTimeFormat('ro-RO', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(date)}
                 </Text>
               </TouchableOpacity>
 
               {showPicker && (
-                <DateTimePicker
-                  value={date < todayStart ? todayStart : date}
-                  mode="date"
-                  display={Platform.OS === 'ios' ? 'inline' : 'default'}
-                  minimumDate={todayStart}
-                  onChange={(_: any, selected: string | number | Date) => {
-                    setShowPicker(false);
-                    if (selected) {
-                      const picked = new Date(selected);
-                      picked.setHours(0,0,0,0);
-                      setDate(picked < todayStart ? todayStart : picked);
-                    }
-                  }}
-                />
+                <Modal
+                  visible={showPicker}
+                  transparent
+                  animationType="fade"
+                  onRequestClose={() => setShowPicker(false)}
+                >
+                  <View style={styles.calendarModalOverlay}>
+                    <View style={styles.calendarModalContent}>
+                      <View style={styles.calendarHeader}>
+                        <Text style={styles.calendarTitle}>Selectează data</Text>
+                        <TouchableOpacity onPress={() => setShowPicker(false)}>
+                          <Ionicons name="close" size={24} color="#111827" />
+                        </TouchableOpacity>
+                      </View>
+                      <Calendar
+                        current={(() => {
+                          const year = date.getFullYear();
+                          const month = String(date.getMonth() + 1).padStart(2, '0');
+                          const day = String(date.getDate()).padStart(2, '0');
+                          return `${year}-${month}-${day}`;
+                        })()}
+                        minDate={(() => {
+                          const year = todayStart.getFullYear();
+                          const month = String(todayStart.getMonth() + 1).padStart(2, '0');
+                          const day = String(todayStart.getDate()).padStart(2, '0');
+                          return `${year}-${month}-${day}`;
+                        })()}
+                        markedDates={markedDates}
+                        disableAllTouchEventsForDisabledDays={true}
+                        onDayPress={(day) => {
+                          // Parse date string to avoid timezone issues
+                          const [year, month, dayNum] = day.dateString.split('-').map(Number);
+                          
+                          // Calculate day of week using the same helper function as markedDates
+                          const dayOfWeek = getDayOfWeekFromDateString(day.dateString);
+                          
+                          // Check if this day is marked as disabled
+                          const markedDate = markedDates[day.dateString];
+                          
+                          // Check if explicitly disabled in markedDates first
+                          if (markedDate?.disabled) {
+                            return; // Don't allow selection
+                          }
+                          
+                          // Check if date is before minimum available date for restricted routes
+                          if (availableDays && !availableDays.availableDaily && availableDays.availableDays) {
+                            const minAvailableDate = new Date(2025, 10, 20); // November 20, 2025
+                            minAvailableDate.setHours(0, 0, 0, 0);
+                            const selectedDateObj = new Date(year, month - 1, dayNum);
+                            selectedDateObj.setHours(0, 0, 0, 0);
+                            
+                            if (selectedDateObj < minAvailableDate) {
+                              Alert.alert(
+                                'Dată indisponibilă',
+                                'Rutele cu restricții sunt disponibile doar începând cu 20 noiembrie 2025.',
+                                [{ text: 'OK' }]
+                              );
+                              return;
+                            }
+                          }
+                          
+                          // Check availability directly from availableDays
+                          let isAvailable = true;
+                          if (availableDays && !availableDays.availableDaily && availableDays.availableDays) {
+                            isAvailable = availableDays.availableDays.includes(dayOfWeek);
+                            
+                            if (!isAvailable) {
+                              return;
+                            }
+                          }
+                          
+                          if (isAvailable) {
+                            // Create date object for setting state (keep local time)
+                            const selectedDate = new Date(year, month - 1, dayNum);
+                            selectedDate.setHours(0, 0, 0, 0);
+                            setDate(selectedDate);
+                            setShowPicker(false);
+                          }
+                        }}
+                        theme={{
+                          backgroundColor: '#ffffff',
+                          calendarBackground: '#ffffff',
+                          textSectionTitleColor: '#64748b',
+                          selectedDayBackgroundColor: '#6366f1',
+                          selectedDayTextColor: '#ffffff',
+                          todayTextColor: '#6366f1',
+                          dayTextColor: '#0f172a',
+                          textDisabledColor: '#cbd5e1',
+                          dotColor: '#6366f1',
+                          selectedDotColor: '#ffffff',
+                          arrowColor: '#6366f1',
+                          monthTextColor: '#0f172a',
+                          textDayFontWeight: '500',
+                          textMonthFontWeight: '800',
+                          textDayHeaderFontWeight: '600',
+                          textDayFontSize: 16,
+                          textMonthFontSize: 18,
+                          textDayHeaderFontSize: 13,
+                        }}
+                        enableSwipeMonths={true}
+                      />
+                    </View>
+                  </View>
+                </Modal>
               )}
 
               <Animated.View style={{ transform: [{ scale }] }}>
@@ -350,6 +601,11 @@ const styles = StyleSheet.create({
   cityText: { color: '#111827', fontSize: 16 },
   emptyDest: { color: '#6b7280', textAlign: 'center', marginTop: 10 },
   swapBtn: { padding: 8 },
+  availableDaysHint: { color: '#64748b', fontSize: 11 },
+  calendarModalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.5)', justifyContent: 'center', alignItems: 'center' },
+  calendarModalContent: { backgroundColor: '#ffffff', borderRadius: 20, padding: 20, width: '90%', maxWidth: 400 },
+  calendarHeader: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 },
+  calendarTitle: { fontSize: 18, fontWeight: '800', color: '#0f172a' },
 });
 
 export default SearchScreen;

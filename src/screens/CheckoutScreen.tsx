@@ -19,16 +19,24 @@ const CheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
   
   
   const scale = useRef(new Animated.Value(1)).current;
-  const [isStudent, setIsStudent] = useState(false);
-  const [studentId, setStudentId] = useState('');
   const [loading, setLoading] = useState(false);
+  const paymentSheetInitializedRef = useRef<string | null>(null); // Track last initialized total
+  const paymentSheetInitTimeoutRef = useRef<NodeJS.Timeout | null>(null); // Track timeout to cancel it
+  const paymentSheetInitCounterRef = useRef<number>(0); // Counter to track initialization order
   const { initPaymentSheet, presentPaymentSheet } = useStripe();
 
-  // Prețul primit de la backend include deja toate taxele și comisionele
-  const subtotal = total;
-  // Discount de 25% pentru studenți (doar dacă checkbox-ul este bifat ȘI ID-ul student este completat)
-  const studentDiscount = (isStudent && studentId.trim().length > 0) ? Math.round(subtotal * 0.25 * 100) / 100 : 0;
-  const grandTotal = Math.max(0, subtotal - studentDiscount);
+  // Prețul primit de la backend include deja toate taxele, comisionele și discount-ul de student (dacă există)
+  const grandTotal = total;
+
+  // Reset payment sheet ref when bookingId changes
+  useEffect(() => {
+    paymentSheetInitializedRef.current = null;
+    paymentSheetInitCounterRef.current = 0;
+    if (paymentSheetInitTimeoutRef.current) {
+      clearTimeout(paymentSheetInitTimeoutRef.current);
+      paymentSheetInitTimeoutRef.current = null;
+    }
+  }, [bookingId]);
 
   useEffect(() => {
     if (!bookingId) {
@@ -36,10 +44,39 @@ const CheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
       return;
     }
 
+    // Cancel any pending initialization
+    if (paymentSheetInitTimeoutRef.current) {
+      clearTimeout(paymentSheetInitTimeoutRef.current);
+      paymentSheetInitTimeoutRef.current = null;
+    }
+
+    // Skip if we just initialized with this exact total (prevent duplicate initializations)
+    const grandTotalKey = `${bookingId}-${grandTotal}`;
+    if (paymentSheetInitializedRef.current === grandTotalKey) {
+      return;
+    }
+
     const init = async () => {
+      // Increment counter to mark this initialization attempt
+      const initId = ++paymentSheetInitCounterRef.current;
+      
+      // Final check - if another initialization is pending or a newer one started, skip this one
+      if (paymentSheetInitTimeoutRef.current) {
+        return;
+      }
+
+      if (initId !== paymentSheetInitCounterRef.current) {
+        return;
+      }
+
       try {
         setLoading(true);
         const { paymentIntent, ephemeralKey, customer } = await fetchPaymentSheetParams(bookingId, grandTotal);
+
+        if (initId !== paymentSheetInitCounterRef.current) {
+          setLoading(false);
+          return;
+        }
 
         const { error: initError } = await initPaymentSheet({
           merchantDisplayName: 'Lavial',
@@ -52,13 +89,37 @@ const CheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         if (initError) {
           throw initError;
         }
+        
+        // Only mark as initialized if this is still the latest init
+        if (initId === paymentSheetInitCounterRef.current) {
+          const finalKey = `${bookingId}-${grandTotal}`;
+          paymentSheetInitializedRef.current = finalKey;
+          paymentSheetInitTimeoutRef.current = null;
+        }
       } catch (e: any) {
-        Alert.alert('Plata indisponibilă', e?.message || 'Te rugăm să încerci mai târziu.');
+        if (initId === paymentSheetInitCounterRef.current) {
+          Alert.alert('Plata indisponibilă', e?.message || 'Te rugăm să încerci mai târziu.');
+        }
       } finally {
-        setLoading(false);
+        if (initId === paymentSheetInitCounterRef.current) {
+          setLoading(false);
+        }
+        paymentSheetInitTimeoutRef.current = null;
       }
     };
-    init();
+    
+    // Add a delay to ensure state is fully updated
+    paymentSheetInitTimeoutRef.current = setTimeout(() => {
+      paymentSheetInitTimeoutRef.current = null;
+      init();
+    }, 250);
+
+    return () => {
+      if (paymentSheetInitTimeoutRef.current) {
+        clearTimeout(paymentSheetInitTimeoutRef.current);
+        paymentSheetInitTimeoutRef.current = null;
+      }
+    };
   }, [bookingId, grandTotal, initPaymentSheet]);
   
   const onPayStripe = async () => {
@@ -163,55 +224,8 @@ const CheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
         <Text style={styles.tripLine}>{from} → {to}</Text>
         <Text style={styles.tripMeta}>{new Date(date).toLocaleDateString('ro-RO')} • {departureTime} → {arrivalTime}</Text>
         {!!passengerName && <Text style={styles.tripMeta}>Pasager: {passengerName}</Text>}
-        <View style={styles.summaryRow}><Text style={styles.summaryLabel}>Preț bilet</Text><Text style={styles.summaryValue}>{subtotal.toFixed(2)} {finalCurrency}</Text></View>
-        <View style={styles.summaryRow}>
-          <Text style={styles.summaryLabel}>Taxe și comisioane</Text>
-          <Text style={[styles.summaryValue, { fontSize: 12 }]}>incluse</Text>
-        </View>
-        {studentDiscount > 0 && (
-          <View style={styles.summaryRow}>
-            <Text style={styles.summaryLabel}>Discount student</Text>
-            <Text style={[styles.summaryValue, { color: '#16a34a' }]}>- {studentDiscount.toFixed(2)} {finalCurrency}</Text>
-          </View>
-        )}
         <View style={styles.divider} />
         <View style={styles.summaryRow}><Text style={styles.totalLabel}>Total</Text><Text style={styles.totalValue}>{grandTotal.toFixed(2)} {finalCurrency}</Text></View>
-      </View>
-
-      {/* Student Discount */}
-      <View style={styles.card}>
-        <TouchableOpacity 
-          style={styles.studentCheckboxRow}
-          onPress={() => {
-            setIsStudent(!isStudent);
-            if (!isStudent) {
-              setStudentId('');
-            }
-          }}
-          activeOpacity={0.7}
-        >
-          <View style={[styles.checkbox, isStudent && styles.checkboxChecked]}>
-            {isStudent && <Ionicons name="checkmark" size={16} color="#fff" />}
-          </View>
-          <View style={styles.studentCheckboxContent}>
-            <Text style={styles.studentCheckboxLabel}>Sunt student</Text>
-            <Text style={styles.studentCheckboxSubtext}>ID-ul student va fi solicitat la verificare</Text>
-          </View>
-        </TouchableOpacity>
-        
-        {isStudent && (
-          <View style={styles.studentInputContainer}>
-            <Ionicons name="school-outline" size={18} color="#64748b" />
-            <TextInput
-              style={styles.studentInput}
-              placeholder="Introdu ID-ul student"
-              placeholderTextColor="#9ca3af"
-              value={studentId}
-              onChangeText={setStudentId}
-              autoCapitalize="characters"
-            />
-          </View>
-        )}
       </View>
 
       {/* Payment methods - Card only */}
@@ -273,15 +287,6 @@ const styles = StyleSheet.create({
   methodActive: { backgroundColor: '#e0e7ff' },
   methodText: { color: '#111827', fontWeight: '700' },
   methodTextMuted: { color: '#6b7280', fontWeight: '700' },
-
-  studentCheckboxRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
-  checkbox: { width: 24, height: 24, borderRadius: 6, borderWidth: 2, borderColor: '#d1d5db', alignItems: 'center', justifyContent: 'center', backgroundColor: '#fff' },
-  checkboxChecked: { backgroundColor: '#6366f1', borderColor: '#6366f1' },
-  studentCheckboxContent: { flex: 1 },
-  studentCheckboxLabel: { fontSize: 16, fontWeight: '700', color: '#111827', marginBottom: 2 },
-  studentCheckboxSubtext: { fontSize: 12, color: '#64748b' },
-  studentInputContainer: { flexDirection: 'row', alignItems: 'center', gap: 10, marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: '#e5e7eb' },
-  studentInput: { flex: 1, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: '#fff', color: '#111827' },
 
   secureRow: { flexDirection: 'row', alignItems: 'center', gap: 8, marginTop: 2, marginBottom: 8, justifyContent: 'center' },
   secureText: { color: '#16a34a', fontWeight: '700' },
