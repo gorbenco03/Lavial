@@ -29,7 +29,6 @@ module.exports = ({ config }) => ({
             blockedPermissions: [
               "android.permission.READ_MEDIA_IMAGES",
               "android.permission.READ_MEDIA_VIDEO",
-              "android.permission.READ_EXTERNAL_STORAGE",
              
               "android.permission.CAMERA"
             ]
