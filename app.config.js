@@ -46,7 +46,7 @@ module.exports = ({ config }) => ({
       icon: "./assets/icon.png",
       buildNumber: "15",
       infoPlist: {
-        NSCameraUsageDescription: "Această aplicație nu folosește camera. Această permisiune este necesară pentru librării externe utilizate în aplicație."
+        NSCameraUsageDescription: "This app uses third-party libraries that may require camera access. The camera is not used directly by the app for its core functionality."
       }
     },
     android: {
