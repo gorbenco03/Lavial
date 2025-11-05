@@ -20,7 +20,7 @@
     "production": {
       "autoIncrement": true,
       "android": {
-        "versionCode": "53", 
+         
         "buildType": "app-bundle",
         "image": "latest",
         "gradleCommand": ":app:bundleRelease"
