@@ -25,7 +25,14 @@ module.exports = ({ config }) => ({
             compileSdkVersion: 35,
             targetSdkVersion: 35,
             buildToolsVersion: "35.0.0",
-            minSdkVersion: 24
+            minSdkVersion: 24,
+            blockedPermissions: [
+              "android.permission.READ_MEDIA_IMAGES",
+              "android.permission.READ_MEDIA_VIDEO",
+              "android.permission.READ_EXTERNAL_STORAGE",
+             
+              "android.permission.CAMERA"
+            ]
           }
         }
       ]
@@ -46,7 +53,8 @@ module.exports = ({ config }) => ({
       icon: "./assets/icon.png",
       buildNumber: "15",
       infoPlist: {
-        NSCameraUsageDescription: "This app uses third-party libraries that may require camera access. The camera is not used directly by the app for its core functionality."
+        NSCameraUsageDescription: "This app uses third-party libraries that may require camera access. The camera is not used directly by the app for its core functionality.",
+        ITSAppUsesNonExemptEncryption: false
       }
     },
     android: {
