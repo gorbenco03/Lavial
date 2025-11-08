@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from 'react';
-import { View, Text, StyleSheet, TouchableOpacity, Platform, Animated, Easing, ScrollView, KeyboardAvoidingView, Modal, FlatList, TextInput, Vibration, Alert } from 'react-native';
+import { View, Text, StyleSheet, TouchableOpacity, Platform, Animated, Easing, ScrollView, KeyboardAvoidingView, Modal, FlatList, TextInput, Vibration, Alert, useWindowDimensions } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
 import { Ionicons } from '@expo/vector-icons';
 import { Calendar } from 'react-native-calendars';
@@ -8,6 +8,7 @@ import type { NativeStackScreenProps } from '@react-navigation/native-stack';
 import type { AppStackParamList } from '../navigation/AppNavigator';
 import { gradients, palette, shadow } from '../styles/theme';
 import { addRecentFrom, addRecentTo, getRecentFrom, getRecentTo } from '../utils/recentCities';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Search'>;
@@ -274,6 +275,10 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
   const hintOpacity = hintPulse.interpolate({ inputRange: [0, 1], outputRange: [0.35, 1] });
   const hintTranslate = hintPulse.interpolate({ inputRange: [0, 1], outputRange: [4, 0] });
 
+  const insets = useSafeAreaInsets();
+  const { height: windowHeight } = useWindowDimensions();
+  const modalMaxHeight = Math.min(windowHeight * 0.75, 520);
+
   return (
     <View style={styles.root}>
       <LinearGradient colors={["#60a5fa", "#818cf8", "#a78bfa"]} start={{ x: 0, y: 0 }} end={{ x: 1, y: 1 }} style={styles.hero}>
@@ -473,93 +478,143 @@ const SearchScreen: React.FC<Props> = ({ navigation }) => {
       {/* From Modal */}
       <Modal visible={fromModal} animationType="none" transparent onRequestClose={() => setFromModal(false)}>
         <View style={styles.modalOverlay}>
-          <Animated.View style={[styles.modalCard, { opacity: modalOpacity, transform: [{ translateY: modalSlide }] }]}>
-            <View style={styles.modalHeaderRow}>
-              <Text style={styles.modalTitle}>Selectează orașul de plecare</Text>
-              <TouchableOpacity onPress={() => setFromModal(false)}>
-                <Ionicons name="close" size={22} color="#111827" />
-              </TouchableOpacity>
-            </View>
-            {recentFrom.length > 0 && (
-              <View style={{ marginBottom: 8 }}>
-                <Text style={{ color: '#64748b', marginBottom: 6 }}>Recent</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {recentFrom.map(c => (
-                    <TouchableOpacity key={c} onPress={() => onSelectFrom(c)}>
-                      <Text style={styles.hint}>{c}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            )}
-            <View style={styles.searchRow}>
-              <Ionicons name="search" size={18} color="#6b7280" />
-              <TextInput
-                placeholder="Caută oraș"
-                placeholderTextColor="#9ca3af"
-                style={styles.searchInput}
-                value={searchFrom}
-                onChangeText={setSearchFrom}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? insets.bottom : 0}
+            style={styles.modalAvoid}
+          >
+            <Animated.View
+              style={[
+                styles.modalCard,
+                {
+                  opacity: modalOpacity,
+                  transform: [{ translateY: modalSlide }],
+                  maxHeight: modalMaxHeight,
+                }
+              ]}
+            >
+              <FlatList
+                data={filteredFrom}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity style={styles.cityItem} onPress={() => onSelectFrom(item)}>
+                    <Ionicons name="navigate-outline" size={18} color="#111827" />
+                    <Text style={styles.cityText}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                style={{ flexGrow: 0 }}
+                ListHeaderComponent={(
+                  <View>
+                    <View style={styles.modalHeaderRow}>
+                      <Text style={styles.modalTitle}>Selectează orașul de plecare</Text>
+                      <TouchableOpacity onPress={() => setFromModal(false)}>
+                        <Ionicons name="close" size={22} color="#111827" />
+                      </TouchableOpacity>
+                    </View>
+                    {recentFrom.length > 0 && (
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ color: '#64748b', marginBottom: 6 }}>Recent</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                          {recentFrom.map(c => (
+                            <TouchableOpacity key={c} onPress={() => onSelectFrom(c)}>
+                              <Text style={styles.hint}>{c}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                    <View style={styles.searchRow}>
+                      <Ionicons name="search" size={18} color="#6b7280" />
+                      <TextInput
+                        placeholder="Caută oraș"
+                        placeholderTextColor="#9ca3af"
+                        style={styles.searchInput}
+                        value={searchFrom}
+                        onChangeText={setSearchFrom}
+                        returnKeyType="done"
+                      />
+                    </View>
+                  </View>
+                )}
+                ListFooterComponent={<View style={{ height: Math.max(insets.bottom, 16) }} />}
+                contentContainerStyle={{ paddingBottom: 12 }}
               />
-            </View>
-            <FlatList
-              data={filteredFrom}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.cityItem} onPress={() => onSelectFrom(item)}>
-                  <Ionicons name="navigate-outline" size={18} color="#111827" />
-                  <Text style={styles.cityText}>{item}</Text>
-                </TouchableOpacity>
-              )}
-            />
-          </Animated.View>
+            </Animated.View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
 
       {/* To Modal */}
       <Modal visible={toModal} animationType="none" transparent onRequestClose={() => setToModal(false)}>
         <View style={styles.modalOverlay}>
-          <Animated.View style={[styles.modalCard, { opacity: modalOpacity, transform: [{ translateY: modalSlide }] }]}>
-            <View style={styles.modalHeaderRow}>
-              <Text style={styles.modalTitle}>Selectează orașul de destinație</Text>
-              <TouchableOpacity onPress={() => setToModal(false)}>
-                <Ionicons name="close" size={22} color="#111827" />
-              </TouchableOpacity>
-            </View>
-            {recentTo.length > 0 && (
-              <View style={{ marginBottom: 8 }}>
-                <Text style={{ color: '#64748b', marginBottom: 6 }}>Recent</Text>
-                <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
-                  {recentTo.map(c => (
-                    <TouchableOpacity key={c} onPress={() => onSelectTo(c)}>
-                      <Text style={styles.hint}>{c}</Text>
-                    </TouchableOpacity>
-                  ))}
-                </View>
-              </View>
-            )}
-            <View style={styles.searchRow}>
-              <Ionicons name="search" size={18} color="#6b7280" />
-              <TextInput
-                placeholder="Caută oraș"
-                placeholderTextColor="#9ca3af"
-                style={styles.searchInput}
-                value={searchTo}
-                onChangeText={setSearchTo}
+          <KeyboardAvoidingView
+            behavior={Platform.OS === 'ios' ? 'padding' : 'height'}
+            keyboardVerticalOffset={Platform.OS === 'ios' ? insets.bottom : 0}
+            style={styles.modalAvoid}
+          >
+            <Animated.View
+              style={[
+                styles.modalCard,
+                {
+                  opacity: modalOpacity,
+                  transform: [{ translateY: modalSlide }],
+                  maxHeight: modalMaxHeight,
+                }
+              ]}
+            >
+              <FlatList
+                data={filteredTo}
+                keyExtractor={(item) => item}
+                renderItem={({ item }) => (
+                  <TouchableOpacity style={styles.cityItem} onPress={() => onSelectTo(item)}>
+                    <Ionicons name="location-outline" size={18} color="#111827" />
+                    <Text style={styles.cityText}>{item}</Text>
+                  </TouchableOpacity>
+                )}
+                keyboardShouldPersistTaps="handled"
+                keyboardDismissMode="on-drag"
+                style={{ flexGrow: 0 }}
+                ListHeaderComponent={(
+                  <View>
+                    <View style={styles.modalHeaderRow}>
+                      <Text style={styles.modalTitle}>Selectează orașul de destinație</Text>
+                      <TouchableOpacity onPress={() => setToModal(false)}>
+                        <Ionicons name="close" size={22} color="#111827" />
+                      </TouchableOpacity>
+                    </View>
+                    {recentTo.length > 0 && (
+                      <View style={{ marginBottom: 8 }}>
+                        <Text style={{ color: '#64748b', marginBottom: 6 }}>Recent</Text>
+                        <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+                          {recentTo.map(c => (
+                            <TouchableOpacity key={c} onPress={() => onSelectTo(c)}>
+                              <Text style={styles.hint}>{c}</Text>
+                            </TouchableOpacity>
+                          ))}
+                        </View>
+                      </View>
+                    )}
+                    <View style={styles.searchRow}>
+                      <Ionicons name="search" size={18} color="#6b7280" />
+                      <TextInput
+                        placeholder="Caută oraș"
+                        placeholderTextColor="#9ca3af"
+                        style={styles.searchInput}
+                        value={searchTo}
+                        onChangeText={setSearchTo}
+                        returnKeyType="done"
+                      />
+                    </View>
+                  </View>
+                )}
+                ListFooterComponent={<View style={{ height: Math.max(insets.bottom, 16) }} />}
+                contentContainerStyle={{ paddingBottom: 12 }}
+                ListEmptyComponent={<Text style={styles.emptyDest}>Nu sunt destinații disponibile. Alege un alt oraș de plecare.</Text>}
               />
-            </View>
-            <FlatList
-              data={filteredTo}
-              keyExtractor={(item) => item}
-              renderItem={({ item }) => (
-                <TouchableOpacity style={styles.cityItem} onPress={() => onSelectTo(item)}>
-                  <Ionicons name="location-outline" size={18} color="#111827" />
-                  <Text style={styles.cityText}>{item}</Text>
-                </TouchableOpacity>
-              )}
-              ListEmptyComponent={<Text style={styles.emptyDest}>Nu sunt destinații disponibile. Alege un alt oraș de plecare.</Text>}
-            />
-          </Animated.View>
+            </Animated.View>
+          </KeyboardAvoidingView>
         </View>
       </Modal>
     </View>
@@ -592,7 +647,8 @@ const styles = StyleSheet.create({
   fabHint: { position: 'absolute', bottom: 92, right: 24, backgroundColor: '#111827', paddingHorizontal: 10, paddingVertical: 6, borderRadius: 999 },
   fabHintText: { color: '#fff', fontWeight: '700' },
   modalOverlay: { flex: 1, backgroundColor: 'rgba(0,0,0,0.35)', justifyContent: 'flex-end' },
-  modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, maxHeight: '70%' },
+  modalAvoid: { flex: 1, justifyContent: 'flex-end' },
+  modalCard: { backgroundColor: '#fff', borderTopLeftRadius: 20, borderTopRightRadius: 20, padding: 16, marginHorizontal: 12 },
   modalHeaderRow: { flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 },
   modalTitle: { fontSize: 16, fontWeight: '800', color: '#111827' },
   searchRow: { flexDirection: 'row', alignItems: 'center', gap: 8, borderWidth: 1, borderColor: '#e5e7eb', borderRadius: 12, paddingHorizontal: 10, paddingVertical: 10, marginBottom: 10 },

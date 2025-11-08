@@ -7,7 +7,7 @@ import { EXPO_STRIPE_PUBLISHABLE_KEY } from '@env';
 
 const App = () => {
   const stripeKey = typeof EXPO_STRIPE_PUBLISHABLE_KEY === 'string' ? EXPO_STRIPE_PUBLISHABLE_KEY : '';
-
+  
   if (!stripeKey) {
     console.error('Stripe publishable key is missing. Please set EXPO_STRIPE_PUBLISHABLE_KEY in .env file');
   }
