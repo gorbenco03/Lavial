@@ -3,7 +3,7 @@ module.exports = ({ config }) => ({
   expo: {
     name: "Lavial",
     slug: "Lavial",
-    version: "5.0.3",
+    version: "5.0.4",
     plugins: [
       [
         "expo-font",
