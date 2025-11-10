@@ -7,6 +7,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { saveTicket } from '../utils/storage';
 import { useStripe } from '@stripe/stripe-react-native';
 import { fetchPaymentSheetParams } from '../api/payments';
+import { EXPO_STRIPE_MERCHANT_COUNTRY } from '@env';
 import { generateTicketPDF } from '../utils/ticketPdf';
 
 type Props = NativeStackScreenProps<AppStackParamList, 'Checkout'>;
@@ -27,6 +28,9 @@ const CheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
 
   // Prețul primit de la backend include deja toate taxele, comisionele și discount-ul de student (dacă există)
   const grandTotal = total;
+  const merchantCountryCode = typeof EXPO_STRIPE_MERCHANT_COUNTRY === 'string' && EXPO_STRIPE_MERCHANT_COUNTRY.length === 2
+    ? EXPO_STRIPE_MERCHANT_COUNTRY.toUpperCase()
+    : 'RO';
 
   // Reset payment sheet ref when bookingId changes
   useEffect(() => {
@@ -80,10 +84,14 @@ const CheckoutScreen: React.FC<Props> = ({ route, navigation }) => {
 
         const { error: initError } = await initPaymentSheet({
           merchantDisplayName: 'Lavial',
+          merchantCountryCode,
           paymentIntentClientSecret: paymentIntent,
           customerEphemeralKeySecret: ephemeralKey,
           customerId: customer,
           allowsDelayedPaymentMethods: false,
+          applePay: {
+            merchantCountryCode,
+          },
         });
 
         if (initError) {

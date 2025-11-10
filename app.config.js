@@ -1,3 +1,5 @@
+const merchantId = process.env.EXPO_STRIPE_MERCHANT_ID || '';
+
 module.exports = ({ config }) => ({
   ...config,
   expo: {
@@ -54,6 +56,9 @@ module.exports = ({ config }) => ({
       infoPlist: {
         NSCameraUsageDescription: "This app uses third-party libraries that may require camera access. The camera is not used directly by the app for its core functionality.",
         ITSAppUsesNonExemptEncryption: false
+      },
+      entitlements: {
+        "com.apple.developer.in-app-payments": [merchantId]
       }
     },
     android: {
