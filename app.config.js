@@ -1,4 +1,4 @@
-const merchantId = process.env.EXPO_STRIPE_MERCHANT_ID || '';
+const merchantId = process.env.EXPO_STRIPE_MERCHANT_ID;
 
 module.exports = ({ config }) => ({
   ...config,
